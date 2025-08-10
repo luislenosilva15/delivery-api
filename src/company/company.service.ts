@@ -1,19 +1,22 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { StorageService } from 'src/storage/storage.service';
+import { companyFormaterHelper } from 'src/helpers/company-formater-helper';
 
 @Injectable()
 export class CompanyService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storageService: StorageService,
+  ) {}
 
-  async create(
-    createCompanyDto: CreateCompanyDto,
-    files: {
-      cover?: Express.Multer.File[];
-      logo?: Express.Multer.File[];
-    },
-  ) {
+  async create(createCompanyDto: CreateCompanyDto, image: Express.Multer.File) {
     if (createCompanyDto.email) {
       const existing = await this.prisma.company.findUnique({
         where: {
@@ -26,34 +29,75 @@ export class CompanyService {
       }
     }
 
-    const cover =
-      'https://st3.depositphotos.com/5918238/18694/i/450/depositphotos_186942178-stock-photo-grunge-scratched-blue-background-illustration.jpg';
+    const imageUrlData = await this.storageService.upload(
+      'company',
+      image,
+      image.originalname,
+    );
 
-    const logo =
-      'https://marketplace.canva.com/EAF5s5UAeZ8/1/0/1600w/canva-logotipo-para-pizzaria-simples-vermelho-9fbcMglfwGo.jpg';
+    if (!imageUrlData?.path) {
+      throw new InternalServerErrorException('Erro ao salvar imagem');
+    }
 
     const company = await this.prisma.company.create({
       data: {
         ...createCompanyDto,
-        coverImageUrl: cover,
-        logoUrl: logo,
+        logoUrl: imageUrlData.path,
       },
     });
 
     return company;
   }
 
-  findAll() {
-    return `This action returns all company`;
+  async update(
+    id: number,
+    updateCompanyDto: UpdateCompanyDto,
+    image: Express.Multer.File,
+  ) {
+    const company = {
+      ...updateCompanyDto,
+    };
+
+    if (image) {
+      const companyDb = await this.prisma.company.findUnique({
+        where: {
+          id,
+        },
+        select: {
+          logoUrl: true,
+        },
+      });
+
+      const path = companyDb.logoUrl?.split('/').pop();
+
+      await this.storageService.delete('company', path);
+
+      const newImage = await this.storageService.upload(
+        'company',
+        image,
+        image.originalname,
+      );
+
+      if (!newImage?.path) {
+        throw new InternalServerErrorException('Erro ao salvar imagem');
+      }
+
+      company.logoUrl = newImage.path;
+    }
+
+    const editedCompany = await this.prisma.company.update({
+      where: {
+        id,
+      },
+      data: {
+        ...company,
+      },
+    });
+
+    return {
+      company: companyFormaterHelper(editedCompany),
+    };
   }
 
-  findOne(id: number) {}
-
-  update(id: number, updateCompanyDto: UpdateCompanyDto) {
-    return `This action updates a #${id} company`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} company`;
-  }
+  remove(id: number) {}
 }

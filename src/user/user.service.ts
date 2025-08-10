@@ -14,12 +14,21 @@ export class UserService {
     private readonly storageService: StorageService,
   ) {}
 
-  async create(createUserDto: CreateUserDto, image: Express.Multer.File) {
+  async create(
+    createUserDto: CreateUserDto,
+    image: Express.Multer.File,
+    companyId: number,
+  ) {
     const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(
-      createUserDto.password,
-      saltRounds,
-    );
+
+    if (createUserDto.password) {
+      const hashedPassword = await bcrypt.hash(
+        createUserDto.password,
+        saltRounds,
+      );
+
+      createUserDto.password = hashedPassword;
+    }
 
     const imageUrlData =
       image &&
@@ -37,9 +46,8 @@ export class UserService {
 
     const user = {
       ...createUserDto,
-      companyId: Number(createUserDto.companyId),
+      companyId,
       imageUrl: imageUrlData?.path || null,
-      password: hashedPassword,
     };
 
     const userData = await this.prisma.user.create({ data: user });
@@ -47,10 +55,6 @@ export class UserService {
     return {
       ...userFormaterHelper(userData),
     };
-  }
-
-  findAll() {
-    return `This action returns all user`;
   }
 
   findOne(id: number) {
@@ -69,6 +73,10 @@ export class UserService {
     const hasRemoveImage = user.removeImage;
 
     delete user.removeImage;
+
+    if (typeof updateUserDto.isActive === 'string') {
+      user.isActive = updateUserDto.isActive === 'true';
+    }
 
     if (user.password) {
       user.password = await bcrypt.hash(user.password, 10);
@@ -120,6 +128,36 @@ export class UserService {
   }
 
   remove(id: number) {
-    return `This action removes a #${id} user`;
+    return this.prisma.user.delete({ where: { id } });
+  }
+
+  async findAll(companyId: number, page = 1, search?: string, limit = 10) {
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        where: {
+          companyId,
+          name: { contains: search || '', mode: 'insensitive' },
+        },
+        skip,
+        take: limit,
+        orderBy: { id: 'desc' },
+      }),
+      this.prisma.user.count({
+        where: {
+          companyId,
+          name: { contains: search || '', mode: 'insensitive' },
+        },
+      }),
+    ]);
+
+    return {
+      users: data.map((user) => userFormaterHelper(user)),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 }

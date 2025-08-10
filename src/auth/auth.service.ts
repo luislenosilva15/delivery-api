@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { userFormaterHelper } from 'src/helpers/user-formater-helper';
+import { companyFormaterHelper } from 'src/helpers/company-formater-helper';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +17,13 @@ export class AuthService {
   async login(auth: AuthDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: auth.email },
+      include: {
+        company: {
+          include: {
+            openingHours: true,
+          },
+        },
+      },
     });
 
     if (!user || !(await bcrypt.compare(auth.password, user.password))) {
@@ -25,6 +33,7 @@ export class AuthService {
     const payload = {
       id: user.id,
       email: user.email,
+      companyId: user.companyId,
     };
 
     const token = this.jwtService.sign(payload);
@@ -40,10 +49,8 @@ export class AuthService {
       where: { id: userId },
       include: {
         company: {
-          select: {
-            id: true,
-            name: true,
-            logoUrl: true,
+          include: {
+            openingHours: true,
           },
         },
       },
@@ -54,7 +61,7 @@ export class AuthService {
 
     return {
       user: userFormaterHelper(user),
-      company,
+      company: companyFormaterHelper(company),
       acessToken: this.jwtService.sign({ id: user.id, email: user.email }),
     };
   }

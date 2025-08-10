@@ -16,6 +16,7 @@ export class CreateUserDto {
   email: string;
 
   @IsString()
+  @IsOptional()
   @MinLength(6)
   password: string;
 
@@ -29,7 +30,4 @@ export class CreateUserDto {
 
   @IsEnum(UserRole)
   role: UserRole;
-
-  @IsString()
-  companyId: number;
 }
