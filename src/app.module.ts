@@ -6,9 +6,12 @@ import { PrismaService } from './prisma/prisma.service';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { OpeningHoursModule } from './opening-hours/opening-hours.module';
+import { MenuModule } from './menu/menu.module';
+import { MenuGroupModule } from './menu-group/menu-group.module';
+import { ProductModule } from './product/product.module';
 
 @Module({
-  imports: [CompanyModule, UserModule, AuthModule, OpeningHoursModule],
+  imports: [CompanyModule, UserModule, AuthModule, OpeningHoursModule, MenuModule, MenuGroupModule, ProductModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })

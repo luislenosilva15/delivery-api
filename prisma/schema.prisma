@@ -14,6 +14,12 @@ enum UserRole {
   MARKETING
 }
 
+enum ProductAvailabilityBy {
+  DELIVERY
+  LOCAL
+  BOTH
+}
+
 model Company {
   id              Int           @id @default(autoincrement())
   email           String        @unique
@@ -33,6 +39,7 @@ model Company {
   openingHours    OpeningHour[]
   isAlwaysOpening Boolean       @default(false)
   temporaryClosed Boolean       @default(false)
+  Menu            Menu[]
 }
 
 model OpeningHour {
@@ -60,4 +67,64 @@ model User {
   isActive  Boolean  @default(false)
   companyId Int
   company   Company  @relation(fields: [companyId], references: [id])
+}
+
+model MenuHours {
+  id          Int        @id @default(autoincrement())
+  companyId   Int
+  dayOfWeek   Int // 0 = Domingo, ..., 6 = Sábado
+  startTime   String? // "HH:mm"
+  endTime     String? // "HH:mm"
+  menuGroup   MenuGroup? @relation(fields: [menuGroupId], references: [id])
+  menuGroupId Int?
+  alwaysOpen  Boolean    @default(false)
+}
+
+model MenuGroup {
+  id        Int         @id @default(autoincrement())
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  name      String
+  menuHours MenuHours[]
+  menu      Menu        @relation(fields: [menuId], references: [id])
+  menuId    Int
+  Product   Product[]
+  disabled  Boolean     @default(false)
+}
+
+model Menu {
+  id        Int         @id @default(autoincrement())
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  menuGroup MenuGroup[]
+  company   Company     @relation(fields: [companyId], references: [id])
+  companyId Int
+}
+
+model ProductHours {
+  id         Int      @id @default(autoincrement())
+  companyId  Int
+  dayOfWeek  Int // 0 = Domingo, ..., 6 = Sábado
+  startTime  String? // "HH:mm"
+  endTime    String? // "HH:mm"
+  alwaysOpen Boolean  @default(false)
+  Product    Product? @relation(fields: [productId], references: [id])
+  productId  Int?
+}
+
+model Product {
+  id                    Int                   @id @default(autoincrement())
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  code                  String?
+  name                  String
+  description           String?
+  price                 Float
+  menuGroup             MenuGroup             @relation(fields: [menuGroupId], references: [id])
+  menuGroupId           Int
+  isAdultOnly           Boolean               @default(false)
+  productHours          ProductHours[]
+  image                 String?
+  productAvailabilityBy ProductAvailabilityBy
+  disabled              Boolean               @default(false)
 }
