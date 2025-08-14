@@ -9,4 +9,6 @@ export class CreateProductDto {
   menuGroupId: number;
   isAdultOnly?: string;
   productAvailabilityBy: ProductAvailabilityBy;
+  productHours?: string;
+  alwaysAvailable: string;
 }

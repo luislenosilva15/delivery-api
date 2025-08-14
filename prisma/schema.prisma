@@ -39,7 +39,7 @@ model Company {
   openingHours    OpeningHour[]
   isAlwaysOpening Boolean       @default(false)
   temporaryClosed Boolean       @default(false)
-  Menu            Menu[]
+  menu            Menu[]
 }
 
 model OpeningHour {
@@ -75,7 +75,7 @@ model MenuHours {
   dayOfWeek   Int // 0 = Domingo, ..., 6 = Sábado
   startTime   String? // "HH:mm"
   endTime     String? // "HH:mm"
-  menuGroup   MenuGroup? @relation(fields: [menuGroupId], references: [id])
+  menuGroup   MenuGroup? @relation(fields: [menuGroupId], references: [id], onDelete: Cascade)
   menuGroupId Int?
   alwaysOpen  Boolean    @default(false)
 }
@@ -85,8 +85,8 @@ model MenuGroup {
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   name      String
-  menuHours MenuHours[]
-  menu      Menu        @relation(fields: [menuId], references: [id])
+  menuHours MenuHours[] 
+  menu      Menu        @relation(fields: [menuId], references: [id], onDelete: Cascade)
   menuId    Int
   Product   Product[]
   disabled  Boolean     @default(false)
@@ -103,13 +103,12 @@ model Menu {
 
 model ProductHours {
   id         Int      @id @default(autoincrement())
-  companyId  Int
   dayOfWeek  Int // 0 = Domingo, ..., 6 = Sábado
   startTime  String? // "HH:mm"
   endTime    String? // "HH:mm"
-  alwaysOpen Boolean  @default(false)
-  Product    Product? @relation(fields: [productId], references: [id])
+  Product    Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId  Int?
+  closed     Boolean @default(false)
 }
 
 model Product {
@@ -120,11 +119,12 @@ model Product {
   name                  String
   description           String?
   price                 Float
-  menuGroup             MenuGroup             @relation(fields: [menuGroupId], references: [id])
+  menuGroup             MenuGroup             @relation(fields: [menuGroupId], references: [id], onDelete: Cascade)
   menuGroupId           Int
   isAdultOnly           Boolean               @default(false)
   productHours          ProductHours[]
   image                 String?
   productAvailabilityBy ProductAvailabilityBy
   disabled              Boolean               @default(false)
+  alwaysAvailable       Boolean               @default(true)
 }

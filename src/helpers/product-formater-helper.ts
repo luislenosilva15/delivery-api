@@ -6,6 +6,6 @@ export const productFormaterHelper = (product: Product) => {
 
   return {
     ...product,
-    imageUrl: product.image ? `${baseUrl}${product.image}` : null,
+    image: product.image ? `${baseUrl}${product.image}` : null,
   };
 };

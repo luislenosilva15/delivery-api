@@ -45,12 +45,22 @@ export class ProductController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(+id, updateProductDto);
+  @UseInterceptors(FileInterceptor('image'))
+  update(
+    @Param('id') id: string,
+    @Body() updateProductDto: UpdateProductDto,
+    @UploadedFile() image: Express.Multer.File,
+  ) {
+    return this.productService.update(+id, updateProductDto, image);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productService.remove(+id);
+  }
+
+  @Patch('disable/:id')
+  disable(@Param('id') id: string, @Body() body: { disabled: boolean }) {
+    return this.productService.disable(+id, body.disabled);
   }
 }

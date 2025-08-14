@@ -46,9 +46,7 @@ export class MenuGroupService {
       where: {
         id,
       },
-      data: {
-        name: updateMenuGroupDto.name,
-      },
+      data: updateMenuGroupDto,
     });
   }
 
