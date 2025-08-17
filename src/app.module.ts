@@ -11,7 +11,15 @@ import { MenuGroupModule } from './menu-group/menu-group.module';
 import { ProductModule } from './product/product.module';
 
 @Module({
-  imports: [CompanyModule, UserModule, AuthModule, OpeningHoursModule, MenuModule, MenuGroupModule, ProductModule],
+  imports: [
+    CompanyModule,
+    UserModule,
+    AuthModule,
+    OpeningHoursModule,
+    MenuModule,
+    MenuGroupModule,
+    ProductModule,
+  ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })

@@ -71,25 +71,25 @@ model User {
 
 model MenuHours {
   id          Int        @id @default(autoincrement())
-  companyId   Int
   dayOfWeek   Int // 0 = Domingo, ..., 6 = Sábado
   startTime   String? // "HH:mm"
   endTime     String? // "HH:mm"
   menuGroup   MenuGroup? @relation(fields: [menuGroupId], references: [id], onDelete: Cascade)
   menuGroupId Int?
-  alwaysOpen  Boolean    @default(false)
+  closed      Boolean    @default(false)
 }
 
 model MenuGroup {
-  id        Int         @id @default(autoincrement())
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  name      String
-  menuHours MenuHours[] 
-  menu      Menu        @relation(fields: [menuId], references: [id], onDelete: Cascade)
-  menuId    Int
-  Product   Product[]
-  disabled  Boolean     @default(false)
+  id              Int         @id @default(autoincrement())
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  name            String
+  menuHours       MenuHours[]
+  menu            Menu        @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  menuId          Int
+  Product         Product[]
+  disabled        Boolean     @default(false)
+  alwaysAvailable Boolean     @default(true)
 }
 
 model Menu {
@@ -102,13 +102,13 @@ model Menu {
 }
 
 model ProductHours {
-  id         Int      @id @default(autoincrement())
-  dayOfWeek  Int // 0 = Domingo, ..., 6 = Sábado
-  startTime  String? // "HH:mm"
-  endTime    String? // "HH:mm"
-  Product    Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId  Int?
-  closed     Boolean @default(false)
+  id        Int      @id @default(autoincrement())
+  dayOfWeek Int // 0 = Domingo, ..., 6 = Sábado
+  startTime String? // "HH:mm"
+  endTime   String? // "HH:mm"
+  Product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int?
+  closed    Boolean  @default(false)
 }
 
 model Product {

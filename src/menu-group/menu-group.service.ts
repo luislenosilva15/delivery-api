@@ -7,12 +7,22 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class MenuGroupService {
   constructor(private readonly prisma: PrismaService) {}
   async create(createMenuGroupDto: CreateMenuGroupDto) {
-    return await this.prisma.menuGroup.create({
+    const group = await this.prisma.menuGroup.create({
       data: {
         name: createMenuGroupDto.name,
         menuId: Number(createMenuGroupDto.menuId),
+        alwaysAvailable: createMenuGroupDto.alwaysAvailable,
+        menuHours: createMenuGroupDto.menuHours
+          ? {
+              create: createMenuGroupDto.menuHours,
+            }
+          : undefined,
       },
     });
+
+    return {
+      group,
+    };
   }
 
   async findAll(companyId: number) {
@@ -34,6 +44,9 @@ export class MenuGroupService {
       where: {
         id,
       },
+      include: {
+        menuHours: true,
+      },
     });
 
     return {
@@ -42,12 +55,33 @@ export class MenuGroupService {
   }
 
   async update(id: number, updateMenuGroupDto: UpdateMenuGroupDto) {
-    return await this.prisma.menuGroup.update({
+    await this.prisma.menuHours.deleteMany({
+      where: {
+        menuGroupId: id,
+      },
+    });
+
+    delete updateMenuGroupDto.menuId;
+
+    const group = await this.prisma.menuGroup.update({
       where: {
         id,
       },
-      data: updateMenuGroupDto,
+      data: {
+        name: updateMenuGroupDto.name,
+        alwaysAvailable: updateMenuGroupDto.alwaysAvailable,
+        disabled: updateMenuGroupDto.disabled,
+        menuHours: updateMenuGroupDto.menuHours
+          ? {
+              create: updateMenuGroupDto.menuHours,
+            }
+          : undefined,
+      },
     });
+
+    return {
+      group,
+    };
   }
 
   async remove(id: number) {

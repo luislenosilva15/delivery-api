@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -16,12 +13,16 @@ export class MenuService {
     });
   }
 
-  findAll(companyId: number) {
-    return this.prisma.menu.findMany({
+  async findAll(companyId: number) {
+    const menus = await this.prisma.menu.findMany({
       where: {
         companyId,
       },
     });
+
+    return {
+      menus,
+    };
   }
 
   findOne(id: number) {
