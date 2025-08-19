@@ -1,0 +1,21 @@
+import { Company } from 'src/company/entities/company.entity';
+
+const isOpenNow = (company: Company) => {
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // 0 = domingo, 6 = sábado
+  const currentTime = now.toTimeString().slice(0, 5); // "HH:mm"
+
+  // Filtra apenas horários do dia atual e que não estão fechados
+  const todaysHours = company.openingHours.filter(
+    (h) => h.dayOfWeek === dayOfWeek && !h.closed && h.startTime && h.endTime,
+  );
+
+  // Verifica se o horário atual está dentro de algum intervalo
+  const isOpen = todaysHours.some(
+    (h) => currentTime >= h.startTime && currentTime <= h.endTime,
+  );
+
+  return isOpen;
+};
+
+export default isOpenNow;

@@ -7,6 +7,30 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum CuisineType {
+  PIZZERIA // Pizzaria
+  PASTA // Massas
+  JAPANESE // Japonesa
+  BURGER // Hambúrguer
+  VEGAN // Vegana
+  BBQ // Churrasco
+  SEAFOOD // Frutos do Mar
+  SUSHI // Sushi
+  CHINESE // Chinesa
+  INDIAN // Indiana
+  MEXICAN // Mexicana
+  THAI // Tailandesa
+  ARABIC // Árabe
+  BAKERY // Padaria
+  CAFE // Cafeteria
+  FASTFOOD // Fast Food
+  HEALTHY // Saudável
+  DESSERT // Sobremesas
+  STEAKHOUSE // Churrascaria / Steakhouse
+  BRAZILIAN // Brasileira
+  OTHERS //Outros
+}
+
 enum UserRole {
   ADMIN
   MANAGER
@@ -40,6 +64,7 @@ model Company {
   isAlwaysOpening Boolean       @default(false)
   temporaryClosed Boolean       @default(false)
   menu            Menu[]
+  cuisineType     CuisineType   @default(OTHERS)
 }
 
 model OpeningHour {
@@ -87,7 +112,7 @@ model MenuGroup {
   menuHours       MenuHours[]
   menu            Menu        @relation(fields: [menuId], references: [id], onDelete: Cascade)
   menuId          Int
-  Product         Product[]
+  products        Product[]
   disabled        Boolean     @default(false)
   alwaysAvailable Boolean     @default(true)
 }
@@ -106,7 +131,7 @@ model ProductHours {
   dayOfWeek Int // 0 = Domingo, ..., 6 = Sábado
   startTime String? // "HH:mm"
   endTime   String? // "HH:mm"
-  Product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId Int?
   closed    Boolean  @default(false)
 }

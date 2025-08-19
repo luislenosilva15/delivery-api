@@ -43,6 +43,58 @@ export class CompanyService {
       data: {
         ...createCompanyDto,
         logoUrl: imageUrlData.path,
+        openingHours: {
+          create: [
+            {
+              dayOfWeek: 0,
+              startTime: '12:00',
+              endTime: '14:00',
+              closed: false,
+            },
+            {
+              dayOfWeek: 0,
+              startTime: '13:00',
+              endTime: '19:00',
+              closed: false,
+            },
+            {
+              dayOfWeek: 1,
+              startTime: '08:00',
+              endTime: '12:00',
+              closed: false,
+            },
+            {
+              dayOfWeek: 2,
+              startTime: null,
+              endTime: null,
+              closed: true,
+            },
+            {
+              dayOfWeek: 3,
+              startTime: null,
+              endTime: null,
+              closed: true,
+            },
+            {
+              dayOfWeek: 4,
+              startTime: null,
+              endTime: null,
+              closed: true,
+            },
+            {
+              dayOfWeek: 5,
+              startTime: null,
+              endTime: null,
+              closed: true,
+            },
+            {
+              dayOfWeek: 6,
+              startTime: null,
+              endTime: null,
+              closed: true,
+            },
+          ],
+        },
       },
     });
 

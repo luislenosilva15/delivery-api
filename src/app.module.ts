@@ -9,6 +9,8 @@ import { OpeningHoursModule } from './opening-hours/opening-hours.module';
 import { MenuModule } from './menu/menu.module';
 import { MenuGroupModule } from './menu-group/menu-group.module';
 import { ProductModule } from './product/product.module';
+import { CompanyModule as ClientCompanyModule } from './client/company/company.module';
+import { MenuGroupModule as ClientMenuGroupModule } from './client/menu-group/menu-group.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { ProductModule } from './product/product.module';
     MenuModule,
     MenuGroupModule,
     ProductModule,
+    ClientCompanyModule,
+    ClientMenuGroupModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

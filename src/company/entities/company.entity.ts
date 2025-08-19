@@ -11,4 +11,12 @@ export class Company {
   state: string;
   createdAt: Date;
   updatedAt: Date;
+  isOpen?: boolean;
+  menuId?: number;
+  openingHours?: {
+    dayOfWeek: number;
+    startTime: string | null;
+    endTime: string | null;
+    closed: boolean;
+  }[];
 }
