@@ -44,27 +44,62 @@ enum ProductAvailabilityBy {
   BOTH
 }
 
+enum AvailabilityStatus {
+  DELIVERY
+  LOCAL
+}
+
+enum PaymentMethods {
+  CREDIT_CARD
+  DEBIT_CARD
+  PIX
+  CASH
+  VOUCHER
+}
+
+enum PaymentCardBrand {
+  VISA
+  MASTERCARD
+  AMEX
+  ELO
+  HIPERCARD
+  OTHER
+}
+
+enum PaymentVoucherBrand {
+  ALELO
+  SODEXO
+  VR
+  BEN
+  VEROCHEQUE
+  OTHER
+}
+
 model Company {
-  id              Int           @id @default(autoincrement())
-  email           String        @unique
-  name            String
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  legalName       String? // Razão social
-  document        String? // CNPJ ou CPF
-  phone           String?
-  logoUrl         String
-  isActive        Boolean       @default(true)
-  address         String?
-  city            String?
-  state           String?
-  zipCode         String?
-  users           User[]
-  openingHours    OpeningHour[]
-  isAlwaysOpening Boolean       @default(false)
-  temporaryClosed Boolean       @default(false)
-  menu            Menu[]
-  cuisineType     CuisineType   @default(OTHERS)
+  id                     Int                   @id @default(autoincrement())
+  email                  String                @unique
+  name                   String
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+  legalName              String? // Razão social
+  document               String? // CNPJ ou CPF
+  phone                  String?
+  logoUrl                String
+  isActive               Boolean               @default(true)
+  address                String?
+  city                   String?
+  state                  String?
+  zipCode                String?
+  users                  User[]
+  openingHours           OpeningHour[]
+  isAlwaysOpening        Boolean               @default(false)
+  temporaryClosed        Boolean               @default(false)
+  menu                   Menu[]
+  cuisineType            CuisineType           @default(OTHERS)
+  availability           AvailabilityStatus[]  @default([DELIVERY, LOCAL])
+  paymentMethodAvailable PaymentMethods[]      @default([CREDIT_CARD, DEBIT_CARD, PIX, CASH])
+  paymentCardBrand       PaymentCardBrand[]    @default([VISA, MASTERCARD, AMEX, ELO, HIPERCARD, OTHER])
+  paymentVoucherBrand    PaymentVoucherBrand[] @default([ALELO, SODEXO, VR, BEN, VEROCHEQUE, OTHER])
 }
 
 model OpeningHour {

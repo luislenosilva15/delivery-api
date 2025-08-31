@@ -13,10 +13,12 @@ export class Company {
   updatedAt: Date;
   isOpen?: boolean;
   menuId?: number;
+  isAlwaysOpening?: boolean;
   openingHours?: {
     dayOfWeek: number;
     startTime: string | null;
     endTime: string | null;
     closed: boolean;
   }[];
+  // availability: 'DELIVERY' | 'LOCAL';
 }

@@ -1,9 +1,17 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { CreateCompanyDto } from './dto/create-company.dto';
+import {
+  Availability,
+  CreateCompanyDto,
+  PaymentCardBrand,
+  PaymentMethod,
+  PaymentVoucherBrand,
+} from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { StorageService } from 'src/storage/storage.service';
@@ -29,6 +37,22 @@ export class CompanyService {
       }
     }
 
+    const availability: Availability = JSON.parse(
+      createCompanyDto.availability,
+    );
+
+    const paymentMethodAvailable: PaymentMethod = JSON.parse(
+      createCompanyDto.paymentMethodAvailable,
+    );
+
+    const paymentCardBrand: PaymentCardBrand = JSON.parse(
+      createCompanyDto.paymentCardBrand,
+    );
+
+    const paymentVoucherBrand: PaymentVoucherBrand = JSON.parse(
+      createCompanyDto.paymentVoucherBrand,
+    );
+
     const imageUrlData = await this.storageService.upload(
       'company',
       image,
@@ -42,6 +66,10 @@ export class CompanyService {
     const company = await this.prisma.company.create({
       data: {
         ...createCompanyDto,
+        availability,
+        paymentMethodAvailable,
+        paymentCardBrand,
+        paymentVoucherBrand,
         logoUrl: imageUrlData.path,
         openingHours: {
           create: [
@@ -106,8 +134,35 @@ export class CompanyService {
     updateCompanyDto: UpdateCompanyDto,
     image: Express.Multer.File,
   ) {
+    let availability: Availability;
+    let paymentMethodAvailable: PaymentMethod;
+    let paymentCardBrand: PaymentCardBrand;
+    let paymentVoucherBrand: PaymentVoucherBrand;
+
+    if (updateCompanyDto?.availability.length) {
+      availability = JSON.parse(updateCompanyDto?.availability);
+    }
+
+    if (updateCompanyDto?.paymentMethodAvailable.length) {
+      paymentMethodAvailable = JSON.parse(
+        updateCompanyDto?.paymentMethodAvailable,
+      );
+    }
+
+    if (updateCompanyDto?.paymentCardBrand.length) {
+      paymentCardBrand = JSON.parse(updateCompanyDto?.paymentCardBrand);
+    }
+
+    if (updateCompanyDto?.paymentVoucherBrand.length) {
+      paymentVoucherBrand = JSON.parse(updateCompanyDto?.paymentVoucherBrand);
+    }
+
     const company = {
       ...updateCompanyDto,
+      availability,
+      paymentMethodAvailable,
+      paymentCardBrand,
+      paymentVoucherBrand,
     };
 
     if (image) {
@@ -143,6 +198,7 @@ export class CompanyService {
       },
       data: {
         ...company,
+        availability: updateCompanyDto?.availability && availability,
       },
     });
 
