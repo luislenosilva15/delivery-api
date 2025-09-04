@@ -5,17 +5,18 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import {
-  Availability,
-  CreateCompanyDto,
-  PaymentCardBrand,
-  PaymentMethod,
-  PaymentVoucherBrand,
-} from './dto/create-company.dto';
+import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { StorageService } from 'src/storage/storage.service';
 import { companyFormaterHelper } from 'src/helpers/company-formater-helper';
+import {
+  Availability,
+  PaymentCardBrand,
+  PaymentDebitCardBrand,
+  PaymentMethod,
+  PaymentVoucherBrand,
+} from './entities/company.entity';
 
 @Injectable()
 export class CompanyService {
@@ -49,9 +50,18 @@ export class CompanyService {
       createCompanyDto.paymentCardBrand,
     );
 
+    const paymentDebitCardBrand: PaymentDebitCardBrand = JSON.parse(
+      createCompanyDto.paymentDebitCardBrand,
+    );
+
     const paymentVoucherBrand: PaymentVoucherBrand = JSON.parse(
       createCompanyDto.paymentVoucherBrand,
     );
+
+    delete createCompanyDto.paymentMethodAvailable;
+    delete createCompanyDto.paymentCardBrand;
+    delete createCompanyDto.paymentDebitCardBrand;
+    delete createCompanyDto.paymentVoucherBrand;
 
     const imageUrlData = await this.storageService.upload(
       'company',
@@ -67,9 +77,6 @@ export class CompanyService {
       data: {
         ...createCompanyDto,
         availability,
-        paymentMethodAvailable,
-        paymentCardBrand,
-        paymentVoucherBrand,
         logoUrl: imageUrlData.path,
         openingHours: {
           create: [
@@ -123,6 +130,14 @@ export class CompanyService {
             },
           ],
         },
+        companyPayment: {
+          create: {
+            method: paymentMethodAvailable,
+            cardBrand: paymentCardBrand,
+            voucherBrand: paymentVoucherBrand,
+            debitCardBrand: paymentDebitCardBrand,
+          },
+        },
       },
     });
 
@@ -137,33 +152,54 @@ export class CompanyService {
     let availability: Availability;
     let paymentMethodAvailable: PaymentMethod;
     let paymentCardBrand: PaymentCardBrand;
+    let paymentDebitCardBrand: PaymentCardBrand;
     let paymentVoucherBrand: PaymentVoucherBrand;
 
-    if (updateCompanyDto?.availability.length) {
+    if (updateCompanyDto?.availability?.length) {
       availability = JSON.parse(updateCompanyDto?.availability);
     }
 
-    if (updateCompanyDto?.paymentMethodAvailable.length) {
+    if (updateCompanyDto?.paymentMethodAvailable?.length) {
       paymentMethodAvailable = JSON.parse(
         updateCompanyDto?.paymentMethodAvailable,
       );
     }
 
-    if (updateCompanyDto?.paymentCardBrand.length) {
+    if (updateCompanyDto?.paymentCardBrand?.length) {
       paymentCardBrand = JSON.parse(updateCompanyDto?.paymentCardBrand);
     }
 
-    if (updateCompanyDto?.paymentVoucherBrand.length) {
+    if (updateCompanyDto?.paymentDebitCardBrand?.length) {
+      paymentDebitCardBrand = JSON.parse(
+        updateCompanyDto?.paymentDebitCardBrand,
+      );
+    }
+
+    if (updateCompanyDto?.paymentVoucherBrand?.length) {
       paymentVoucherBrand = JSON.parse(updateCompanyDto?.paymentVoucherBrand);
     }
+
+    delete updateCompanyDto.paymentMethodAvailable;
+    delete updateCompanyDto.paymentCardBrand;
+    delete updateCompanyDto.paymentDebitCardBrand;
+    delete updateCompanyDto.paymentVoucherBrand;
 
     const company = {
       ...updateCompanyDto,
       availability,
-      paymentMethodAvailable,
-      paymentCardBrand,
-      paymentVoucherBrand,
     };
+
+    const companyPayment = {
+      method: paymentMethodAvailable,
+      cardBrand: paymentCardBrand,
+      voucherBrand: paymentVoucherBrand,
+      documentInTicket: !!updateCompanyDto.paymentDocumentInTicket,
+      requiredDocument: !!updateCompanyDto.paymentRequiredDocument,
+      debitCardBrand: paymentDebitCardBrand,
+    };
+
+    delete company.paymentRequiredDocument;
+    delete company.paymentDocumentInTicket;
 
     if (image) {
       const companyDb = await this.prisma.company.findUnique({
@@ -199,6 +235,25 @@ export class CompanyService {
       data: {
         ...company,
         availability: updateCompanyDto?.availability && availability,
+        companyPayment: companyPayment && {
+          upsert: {
+            create: {
+              method: paymentMethodAvailable,
+              cardBrand: paymentCardBrand,
+              voucherBrand: paymentVoucherBrand,
+            },
+            update: {
+              method: paymentMethodAvailable,
+              cardBrand: paymentCardBrand,
+              voucherBrand: paymentVoucherBrand,
+              ...companyPayment,
+            },
+          },
+        },
+      },
+      include: {
+        companyPayment: true,
+        openingHours: true,
       },
     });
 

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthDto } from './dto/auth.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -21,6 +23,7 @@ export class AuthService {
         company: {
           include: {
             openingHours: true,
+            companyPayment: true,
           },
         },
       },
@@ -51,6 +54,7 @@ export class AuthService {
         company: {
           include: {
             openingHours: true,
+            companyPayment: true,
           },
         },
       },

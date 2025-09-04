@@ -1,19 +1,5 @@
 import { IsEmail, IsOptional, IsString } from 'class-validator';
 
-export type Availability = ['DELIVERY' | 'LOCAL'];
-
-export type PaymentMethod = [
-  'CREDIT_CARD' | 'DEBIT_CARD' | 'PIX' | 'CASH' | 'VOUCHER',
-];
-
-export type PaymentCardBrand = [
-  'VISA' | 'MASTERCARD' | 'AMEX' | 'ELO' | 'HIPERCARD' | 'OTHER',
-];
-
-export type PaymentVoucherBrand = [
-  'ALELO' | 'SODEXO' | 'VR' | 'OTHER' | 'BEN' | 'VEROCHEQUE',
-];
-
 export class CreateCompanyDto {
   @IsEmail()
   email: string;
@@ -57,11 +43,29 @@ export class CreateCompanyDto {
   @IsString()
   zipCode?: string;
 
+  @IsOptional()
+  @IsString()
+  paymentDocumentInTicket?: string;
+
+  @IsOptional()
+  @IsString()
+  paymentRequiredDocument?: string;
+
   availability: string;
 
+  @IsOptional()
+  @IsString()
   paymentMethodAvailable: string;
 
+  @IsOptional()
+  @IsString()
   paymentCardBrand: string;
 
+  @IsOptional()
+  @IsString()
+  paymentDebitCardBrand?: string;
+
+  @IsOptional()
+  @IsString()
   paymentVoucherBrand: string;
 }

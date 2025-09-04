@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Injectable } from '@nestjs/common';
 import { companyFormaterHelper } from 'src/helpers/company-formater-helper';
 import isOpenNow from 'src/helpers/company-is-open-now.helper';
@@ -12,6 +14,7 @@ export class CompanyService {
       where: { id },
       include: {
         openingHours: true,
+        companyPayment: true,
         menu: {
           select: {
             id: true,

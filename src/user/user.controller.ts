@@ -19,11 +19,11 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/auth/jwt.guard';
 import { JwtPayload } from 'src/auth/types/jwt-payload.type';
 
-@UseGuards(JwtAuthGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   create(
@@ -34,6 +34,17 @@ export class UserController {
     return this.userService.create(createUserDto, image, +req.user.companyId);
   }
 
+  @Post('admin/:id')
+  @UseInterceptors(FileInterceptor('image'))
+  createAdmin(
+    @Param('id') id: string,
+    @UploadedFile() image: Express.Multer.File,
+    @Body() createUserDto: CreateUserDto,
+  ) {
+    return this.userService.create(createUserDto, image, +id);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('image'))
   @Patch(':id')
   update(
@@ -44,11 +55,13 @@ export class UserController {
     return this.userService.update(+id, updateUserDto, image);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('')
   findAll(
     @Req() req: JwtPayload,
