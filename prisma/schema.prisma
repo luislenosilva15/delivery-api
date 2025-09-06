@@ -84,6 +84,15 @@ enum PaymentVoucherBrand {
   OTHER
 }
 
+enum OrderStatus {
+  PENDING
+  IN_PREPARATION
+  READY
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
 model Company {
   id              Int                  @id @default(autoincrement())
   email           String               @unique
@@ -107,6 +116,8 @@ model Company {
   cuisineType     CuisineType          @default(OTHERS)
   availability    AvailabilityStatus[] @default([DELIVERY, LOCAL])
   companyPayment  CompanyPayment?
+  Client          Client[]
+  Order           Order[]
 }
 
 model CompanyPayment {
@@ -206,4 +217,45 @@ model Product {
   productAvailabilityBy ProductAvailabilityBy
   disabled              Boolean               @default(false)
   alwaysAvailable       Boolean               @default(true)
+  OrderItem             OrderItem[]
+}
+
+model Client {
+  id        Int      @id @default(autoincrement())
+  companyId Int
+  company   Company  @relation(fields: [companyId], references: [id])
+  name      String
+  email     String?  @unique
+  phone     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+}
+
+model Order {
+  id                    Int                   @id @default(autoincrement())
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  status                OrderStatus           @default(PENDING)
+  clientId              Int
+  client                Client                @relation(fields: [clientId], references: [id])
+  company               Company               @relation(fields: [companyId], references: [id])
+  companyId             Int
+  OrderItem             OrderItem[]
+  totalPrice            Float
+  paymentMethod         PaymentMethods
+  paymentCardBrand      PaymentCardBrand?
+  paymentDebitCardBrand PaymentDebitCardBrand?
+  paymentVoucherBrand   PaymentVoucherBrand?
+  deliveryMethod        AvailabilityStatus
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
 }

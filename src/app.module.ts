@@ -11,6 +11,7 @@ import { MenuGroupModule } from './menu-group/menu-group.module';
 import { ProductModule } from './product/product.module';
 import { CompanyModule as ClientCompanyModule } from './client/company/company.module';
 import { MenuGroupModule as ClientMenuGroupModule } from './client/menu-group/menu-group.module';
+import { OrderModule } from './client/order/order.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { MenuGroupModule as ClientMenuGroupModule } from './client/menu-group/me
     ProductModule,
     ClientCompanyModule,
     ClientMenuGroupModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
