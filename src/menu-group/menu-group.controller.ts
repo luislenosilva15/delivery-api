@@ -27,7 +27,6 @@ export class MenuGroupController {
 
   @Get()
   findAll(@Req() req: JwtPayload) {
-    console.log(req.user);
     return this.menuGroupService.findAll(+req.user.companyId);
   }
 

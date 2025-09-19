@@ -232,14 +232,25 @@ model Client {
   orders    Order[]
 }
 
+model OrderDeliveryAddress {
+  id         Int     @id @default(autoincrement())
+  cep        String
+  street     String
+  number     String
+  complement String
+  reference  String?
+  order      Order   @relation(fields: [orderId], references: [id])
+  orderId    Int     @unique
+}
+
 model Order {
-  id                    Int                   @id @default(autoincrement())
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime              @updatedAt
-  status                OrderStatus           @default(PENDING)
+  id                    Int                    @id @default(autoincrement())
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  status                OrderStatus            @default(PENDING)
   clientId              Int
-  client                Client                @relation(fields: [clientId], references: [id])
-  company               Company               @relation(fields: [companyId], references: [id])
+  client                Client                 @relation(fields: [clientId], references: [id])
+  company               Company                @relation(fields: [companyId], references: [id])
   companyId             Int
   OrderItem             OrderItem[]
   totalPrice            Float
@@ -248,14 +259,16 @@ model Order {
   paymentDebitCardBrand PaymentDebitCardBrand?
   paymentVoucherBrand   PaymentVoucherBrand?
   deliveryMethod        AvailabilityStatus
+  deliveryAddress       OrderDeliveryAddress?
 }
 
 model OrderItem {
-  id        Int     @id @default(autoincrement())
-  orderId   Int
-  order     Order   @relation(fields: [orderId], references: [id])
-  productId Int
-  product   Product @relation(fields: [productId], references: [id])
-  quantity  Int
-  price     Float
+  id          Int     @id @default(autoincrement())
+  orderId     Int
+  order       Order   @relation(fields: [orderId], references: [id])
+  productId   Int
+  product     Product @relation(fields: [productId], references: [id])
+  quantity    Int
+  price       Float
+  observation String?
 }

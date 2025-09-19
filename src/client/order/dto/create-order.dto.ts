@@ -33,6 +33,28 @@ class ClientDto {
   phone?: string;
 }
 
+export class DeliveryAddressDto {
+  @IsOptional()
+  @IsString()
+  cep?: string;
+
+  @IsOptional()
+  @IsString()
+  street?: string;
+
+  @IsOptional()
+  @IsString()
+  number?: string;
+
+  @IsOptional()
+  @IsString()
+  complement?: string;
+
+  @IsOptional()
+  @IsString()
+  reference?: string;
+}
+
 class OrderItemDto {
   @IsInt()
   productId: number;
@@ -44,6 +66,10 @@ class OrderItemDto {
   @IsNumber()
   @Min(0)
   price: number;
+
+  @IsOptional()
+  @IsString()
+  observation?: string;
 }
 
 export class CreateOrderDto {
@@ -80,4 +106,6 @@ export class CreateOrderDto {
 
   @IsNumber()
   totalPrice: number;
+
+  deliveryAddress: DeliveryAddressDto;
 }

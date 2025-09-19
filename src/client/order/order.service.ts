@@ -7,8 +7,10 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class OrderService {
   constructor(private prisma: PrismaService) {}
 
-  create(createOrderDto: CreateOrderDto) {
-    return this.prisma.order.create({
+  async create(createOrderDto: CreateOrderDto) {
+    const deliveryOrderAddress = createOrderDto?.deliveryAddress ?? null;
+
+    const order = await this.prisma.order.create({
       data: {
         deliveryMethod: createOrderDto.deliveryMethod,
         paymentCardBrand: createOrderDto.paymentCardBrand,
@@ -27,23 +29,60 @@ export class OrderService {
             },
           },
         },
+        deliveryAddress: deliveryOrderAddress && {
+          create: {
+            cep: deliveryOrderAddress.cep,
+            street: deliveryOrderAddress.street,
+            number: deliveryOrderAddress.number,
+            complement: deliveryOrderAddress.complement,
+            reference: deliveryOrderAddress?.reference,
+          },
+        },
         OrderItem: {
           create: createOrderDto.products.map((product) => ({
             product: { connect: { id: product.productId } },
             quantity: product.quantity,
             price: product.price,
+            observation: product.observation,
           })),
         },
       },
+      include: {
+        client: true,
+        OrderItem: { include: { product: true } },
+      },
     });
+
+    return {
+      order,
+    };
   }
 
   findAll() {
     return `This action returns all order`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
+  async findOne(id: number) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: {
+        client: true,
+        OrderItem: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return {
+      order,
+    };
   }
 
   update(id: number, updateOrderDto: UpdateOrderDto) {

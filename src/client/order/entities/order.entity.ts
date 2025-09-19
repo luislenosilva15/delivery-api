@@ -38,8 +38,7 @@ export class OrderItem {
 
   quantity: number;
   price: number;
-
-  // relations
+  observation?: string;
   order?: Order;
   product?: Product;
 }
