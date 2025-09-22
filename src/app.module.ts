@@ -11,7 +11,8 @@ import { MenuGroupModule } from './menu-group/menu-group.module';
 import { ProductModule } from './product/product.module';
 import { CompanyModule as ClientCompanyModule } from './client/company/company.module';
 import { MenuGroupModule as ClientMenuGroupModule } from './client/menu-group/menu-group.module';
-import { OrderModule } from './client/order/order.module';
+import { OrderModule as ClientOrderModule } from './client/order/order.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { OrderModule } from './client/order/order.module';
     ProductModule,
     ClientCompanyModule,
     ClientMenuGroupModule,
+    ClientOrderModule,
     OrderModule,
   ],
   controllers: [AppController],
