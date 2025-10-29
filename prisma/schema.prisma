@@ -38,12 +38,6 @@ enum UserRole {
   MARKETING
 }
 
-enum ProductAvailabilityBy {
-  DELIVERY
-  LOCAL
-  BOTH
-}
-
 enum AvailabilityStatus {
   DELIVERY
   LOCAL
@@ -180,6 +174,8 @@ model MenuGroup {
   products        Product[]
   disabled        Boolean     @default(false)
   alwaysAvailable Boolean     @default(true)
+  isDeleted       Boolean     @default(false)
+  deletedAt       DateTime?
 }
 
 model Menu {
@@ -202,22 +198,22 @@ model ProductHours {
 }
 
 model Product {
-  id                    Int                   @id @default(autoincrement())
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime              @updatedAt
-  code                  String?
-  name                  String
-  description           String?
-  price                 Float
-  menuGroup             MenuGroup             @relation(fields: [menuGroupId], references: [id], onDelete: Cascade)
-  menuGroupId           Int
-  isAdultOnly           Boolean               @default(false)
-  productHours          ProductHours[]
-  image                 String?
-  productAvailabilityBy ProductAvailabilityBy
-  disabled              Boolean               @default(false)
-  alwaysAvailable       Boolean               @default(true)
-  OrderItem             OrderItem[]
+  id              Int            @id @default(autoincrement())
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  code            String?
+  name            String
+  description     String?
+  price           Float
+  menuGroup       MenuGroup      @relation(fields: [menuGroupId], references: [id], onDelete: Cascade)
+  menuGroupId     Int
+  isAdultOnly     Boolean        @default(false)
+  productHours    ProductHours[]
+  image           String?
+  disabled        Boolean        @default(false)
+  alwaysAvailable Boolean        @default(true)
+  OrderItem       OrderItem[]
+  isActive        Boolean        @default(true)
 }
 
 model Client {

@@ -2,11 +2,11 @@ import {
   Controller,
   Get,
   Body,
-  Patch,
   Param,
   Delete,
   UseGuards,
   Req,
+  Post,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { JwtAuthGuard } from 'src/auth/jwt.guard';
@@ -31,6 +31,11 @@ export class OrderController {
   @Get('/unique/:id')
   findOne(@Param('id') id: string) {
     return this.orderService.findOne(+id);
+  }
+
+  @Post('/change-status')
+  changeStatus(@Body() body: { orderId: number; newStatus: OrderStatus }) {
+    return this.orderService.changeStatus(body.orderId, body.newStatus);
   }
 
   @Delete(':id')

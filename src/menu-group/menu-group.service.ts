@@ -31,6 +31,7 @@ export class MenuGroupService {
         menu: {
           companyId,
         },
+        isDeleted: false,
       },
     });
 
@@ -85,9 +86,13 @@ export class MenuGroupService {
   }
 
   async remove(id: number) {
-    return await this.prisma.menuGroup.delete({
+    return await this.prisma.menuGroup.update({
       where: {
         id,
+      },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
       },
     });
   }

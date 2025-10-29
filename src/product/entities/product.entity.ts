@@ -1,5 +1,3 @@
-import { ProductAvailabilityBy } from '../dto/create-product.dto';
-
 export class Product {
   id: number;
   name: string;
@@ -8,7 +6,6 @@ export class Product {
   image: string;
   menuGroupId: number;
   isAdultOnly: boolean;
-  productAvailabilityBy: ProductAvailabilityBy;
   disabled: boolean;
   createdAt: Date;
   updatedAt: Date;

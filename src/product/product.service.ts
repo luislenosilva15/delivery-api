@@ -55,6 +55,10 @@ export class ProductService {
     const products = await this.prisma.product.findMany({
       where: {
         menuGroupId,
+        isActive: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     });
 
@@ -180,9 +184,13 @@ export class ProductService {
       await this.storageService.delete('product', path);
     }
 
-    return this.prisma.product.delete({
+    return this.prisma.product.update({
       where: {
         id,
+      },
+      data: {
+        isActive: false,
+        image: null,
       },
     });
   }

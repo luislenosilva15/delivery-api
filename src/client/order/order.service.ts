@@ -8,7 +8,7 @@ export class OrderService {
   constructor(private prisma: PrismaService) {}
 
   async create(createOrderDto: CreateOrderDto) {
-    const deliveryOrderAddress = createOrderDto?.deliveryAddress ?? null;
+    const deliveryOrderAddress = createOrderDto?.deliveryAddress ?? undefined;
 
     const order = await this.prisma.order.create({
       data: {

@@ -19,6 +19,7 @@ export class MenuGroupService {
       where: {
         menuId,
         disabled: false,
+        isDeleted: false,
         products: {
           some: {
             id: {
@@ -58,6 +59,7 @@ export class MenuGroupService {
       include: {
         products: {
           where: {
+            isActive: true,
             disabled: false,
             OR: [
               { alwaysAvailable: true },
@@ -73,7 +75,13 @@ export class MenuGroupService {
               },
             ],
           },
+          orderBy: {
+            name: 'asc',
+          },
         },
+      },
+      orderBy: {
+        name: 'asc',
       },
     });
 
