@@ -5,9 +5,6 @@ CREATE TYPE "public"."CuisineType" AS ENUM ('PIZZERIA', 'PASTA', 'JAPANESE', 'BU
 CREATE TYPE "public"."UserRole" AS ENUM ('ADMIN', 'MANAGER', 'OPERATOR', 'MARKETING');
 
 -- CreateEnum
-CREATE TYPE "public"."ProductAvailabilityBy" AS ENUM ('DELIVERY', 'LOCAL', 'BOTH');
-
--- CreateEnum
 CREATE TYPE "public"."AvailabilityStatus" AS ENUM ('DELIVERY', 'LOCAL');
 
 -- CreateEnum
@@ -45,6 +42,7 @@ CREATE TABLE "public"."Company" (
     "temporaryClosed" BOOLEAN NOT NULL DEFAULT false,
     "cuisineType" "public"."CuisineType" NOT NULL DEFAULT 'OTHERS',
     "availability" "public"."AvailabilityStatus"[] DEFAULT ARRAY['DELIVERY', 'LOCAL']::"public"."AvailabilityStatus"[],
+    "themePrimaryColor" TEXT,
 
     CONSTRAINT "Company_pkey" PRIMARY KEY ("id")
 );
@@ -113,6 +111,8 @@ CREATE TABLE "public"."MenuGroup" (
     "menuId" INTEGER NOT NULL,
     "disabled" BOOLEAN NOT NULL DEFAULT false,
     "alwaysAvailable" BOOLEAN NOT NULL DEFAULT true,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "MenuGroup_pkey" PRIMARY KEY ("id")
 );
@@ -151,9 +151,10 @@ CREATE TABLE "public"."Product" (
     "menuGroupId" INTEGER NOT NULL,
     "isAdultOnly" BOOLEAN NOT NULL DEFAULT false,
     "image" TEXT,
-    "productAvailabilityBy" "public"."ProductAvailabilityBy" NOT NULL,
     "disabled" BOOLEAN NOT NULL DEFAULT false,
     "alwaysAvailable" BOOLEAN NOT NULL DEFAULT true,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
 );
@@ -172,19 +173,31 @@ CREATE TABLE "public"."Client" (
 );
 
 -- CreateTable
+CREATE TABLE "public"."OrderDeliveryAddress" (
+    "id" SERIAL NOT NULL,
+    "cep" TEXT NOT NULL,
+    "street" TEXT NOT NULL,
+    "number" TEXT NOT NULL,
+    "complement" TEXT NOT NULL,
+    "reference" TEXT,
+    "orderId" INTEGER NOT NULL,
+
+    CONSTRAINT "OrderDeliveryAddress_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "public"."Order" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "menuId" INTEGER NOT NULL,
     "status" "public"."OrderStatus" NOT NULL DEFAULT 'PENDING',
     "clientId" INTEGER NOT NULL,
     "companyId" INTEGER NOT NULL,
     "totalPrice" DOUBLE PRECISION NOT NULL,
     "paymentMethod" "public"."PaymentMethods" NOT NULL,
-    "paymentCardBrand" "public"."PaymentCardBrand" NOT NULL,
-    "paymentDebitCardBrand" "public"."PaymentDebitCardBrand" NOT NULL,
-    "paymentVoucherBrand" "public"."PaymentVoucherBrand" NOT NULL,
+    "paymentCardBrand" "public"."PaymentCardBrand",
+    "paymentDebitCardBrand" "public"."PaymentDebitCardBrand",
+    "paymentVoucherBrand" "public"."PaymentVoucherBrand",
     "deliveryMethod" "public"."AvailabilityStatus" NOT NULL,
 
     CONSTRAINT "Order_pkey" PRIMARY KEY ("id")
@@ -197,6 +210,7 @@ CREATE TABLE "public"."OrderItem" (
     "productId" INTEGER NOT NULL,
     "quantity" INTEGER NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
+    "observation" TEXT,
 
     CONSTRAINT "OrderItem_pkey" PRIMARY KEY ("id")
 );
@@ -218,6 +232,9 @@ CREATE UNIQUE INDEX "Client_email_key" ON "public"."Client"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Client_phone_key" ON "public"."Client"("phone");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "OrderDeliveryAddress_orderId_key" ON "public"."OrderDeliveryAddress"("orderId");
 
 -- AddForeignKey
 ALTER TABLE "public"."CompanyPayment" ADD CONSTRAINT "CompanyPayment_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "public"."Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -247,7 +264,7 @@ ALTER TABLE "public"."Product" ADD CONSTRAINT "Product_menuGroupId_fkey" FOREIGN
 ALTER TABLE "public"."Client" ADD CONSTRAINT "Client_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "public"."Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Order" ADD CONSTRAINT "Order_menuId_fkey" FOREIGN KEY ("menuId") REFERENCES "public"."Menu"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."OrderDeliveryAddress" ADD CONSTRAINT "OrderDeliveryAddress_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "public"."Order"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."Order" ADD CONSTRAINT "Order_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "public"."Client"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

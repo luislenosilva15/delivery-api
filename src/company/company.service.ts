@@ -82,21 +82,16 @@ export class CompanyService {
           create: [
             {
               dayOfWeek: 0,
-              startTime: '12:00',
-              endTime: '14:00',
-              closed: false,
+              startTime: null,
+              endTime: null,
+              closed: true,
             },
-            {
-              dayOfWeek: 0,
-              startTime: '13:00',
-              endTime: '19:00',
-              closed: false,
-            },
+
             {
               dayOfWeek: 1,
-              startTime: '08:00',
-              endTime: '12:00',
-              closed: false,
+              startTime: null,
+              endTime: null,
+              closed: true,
             },
             {
               dayOfWeek: 2,

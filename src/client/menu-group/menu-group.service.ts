@@ -59,7 +59,7 @@ export class MenuGroupService {
       include: {
         products: {
           where: {
-            isActive: true,
+            isDeleted: false,
             disabled: false,
             OR: [
               { alwaysAvailable: true },

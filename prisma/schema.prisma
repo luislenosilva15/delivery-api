@@ -88,30 +88,31 @@ enum OrderStatus {
 }
 
 model Company {
-  id              Int                  @id @default(autoincrement())
-  email           String               @unique
-  name            String
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  legalName       String? // Razão social
-  document        String? // CNPJ ou CPF
-  phone           String?
-  logoUrl         String
-  isActive        Boolean              @default(true)
-  address         String?
-  city            String?
-  state           String?
-  zipCode         String?
-  users           User[]
-  openingHours    OpeningHour[]
-  isAlwaysOpening Boolean              @default(false)
-  temporaryClosed Boolean              @default(false)
-  menu            Menu[]
-  cuisineType     CuisineType          @default(OTHERS)
-  availability    AvailabilityStatus[] @default([DELIVERY, LOCAL])
-  companyPayment  CompanyPayment?
-  Client          Client[]
-  Order           Order[]
+  id                Int                  @id @default(autoincrement())
+  email             String               @unique
+  name              String
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  legalName         String? // Razão social
+  document          String? // CNPJ ou CPF
+  phone             String?
+  logoUrl           String
+  isActive          Boolean              @default(true)
+  address           String?
+  city              String?
+  state             String?
+  zipCode           String?
+  users             User[]
+  openingHours      OpeningHour[]
+  isAlwaysOpening   Boolean              @default(false)
+  temporaryClosed   Boolean              @default(false)
+  menu              Menu[]
+  cuisineType       CuisineType          @default(OTHERS)
+  availability      AvailabilityStatus[] @default([DELIVERY, LOCAL])
+  companyPayment    CompanyPayment?
+  Client            Client[]
+  Order             Order[]
+  themePrimaryColor String? // Hex color code
 }
 
 model CompanyPayment {
@@ -213,7 +214,8 @@ model Product {
   disabled        Boolean        @default(false)
   alwaysAvailable Boolean        @default(true)
   OrderItem       OrderItem[]
-  isActive        Boolean        @default(true)
+  isDeleted       Boolean        @default(false)
+  deletedAt       DateTime?
 }
 
 model Client {

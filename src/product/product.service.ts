@@ -55,7 +55,7 @@ export class ProductService {
     const products = await this.prisma.product.findMany({
       where: {
         menuGroupId,
-        isActive: true,
+        isDeleted: false,
       },
       orderBy: {
         createdAt: 'desc',
@@ -189,7 +189,8 @@ export class ProductService {
         id,
       },
       data: {
-        isActive: false,
+        isDeleted: true,
+        deletedAt: new Date(),
         image: null,
       },
     });

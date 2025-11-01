@@ -33,6 +33,9 @@ export class MenuGroupService {
         },
         isDeleted: false,
       },
+      orderBy: {
+        id: 'desc',
+      },
     });
 
     return {
