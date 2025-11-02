@@ -78,6 +78,7 @@ export class CompanyService {
         ...createCompanyDto,
         availability,
         logoUrl: imageUrlData.path,
+        slugName: createCompanyDto.slugName,
         openingHours: {
           create: [
             {

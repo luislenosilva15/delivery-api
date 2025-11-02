@@ -91,6 +91,7 @@ model Company {
   id                Int                  @id @default(autoincrement())
   email             String               @unique
   name              String
+  slugName          String               @unique
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @updatedAt
   legalName         String? // Razão social
@@ -252,6 +253,7 @@ model Order {
   companyId             Int
   OrderItem             OrderItem[]
   totalPrice            Float
+  outDeliveryDate       DateTime?
   paymentMethod         PaymentMethods
   paymentCardBrand      PaymentCardBrand?
   paymentDebitCardBrand PaymentDebitCardBrand?

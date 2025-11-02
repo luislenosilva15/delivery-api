@@ -63,9 +63,11 @@ export class OrderService {
   }
 
   async changeStatus(orderId: number, status: OrderStatus) {
+    const outDeliveryStatus = status === OrderStatus.OUT_FOR_DELIVERY;
+
     const order = await this.prisma.order.update({
       where: { id: orderId },
-      data: { status },
+      data: { status, outDeliveryDate: outDeliveryStatus ? new Date() : null },
     });
 
     return {

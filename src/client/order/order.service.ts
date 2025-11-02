@@ -19,16 +19,15 @@ export class OrderService {
         paymentVoucherBrand: createOrderDto.paymentVoucherBrand,
         company: { connect: { id: createOrderDto.companyId } },
         totalPrice: createOrderDto.totalPrice,
-        client: {
-          connectOrCreate: {
-            where: { id: createOrderDto.client.id ?? 0 },
-            create: {
-              name: createOrderDto.client.name,
-              phone: createOrderDto.client.phone,
-              company: { connect: { id: createOrderDto.companyId } },
+        client: createOrderDto.client.id
+          ? { connect: { id: createOrderDto.client.id } }
+          : {
+              create: {
+                name: createOrderDto.client.name,
+                phone: createOrderDto.client.phone,
+                company: { connect: { id: createOrderDto.companyId } },
+              },
             },
-          },
-        },
         deliveryAddress: deliveryOrderAddress && {
           create: {
             cep: deliveryOrderAddress.cep,

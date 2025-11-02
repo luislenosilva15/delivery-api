@@ -68,4 +68,7 @@ export class CreateCompanyDto {
   @IsOptional()
   @IsString()
   paymentVoucherBrand: string;
+
+  @IsString()
+  slugName: string;
 }
