@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -20,9 +21,12 @@ export class OrderController {
     return this.orderService.create(createOrderDto);
   }
 
-  @Get()
-  findAll() {
-    return this.orderService.findAll();
+  @Get(':clientId/company/:companyId')
+  findAll(
+    @Param('clientId', ParseIntPipe) clientId: number,
+    @Param('companyId', ParseIntPipe) companyId: number,
+  ) {
+    return this.orderService.findAll(clientId, companyId);
   }
 
   @Get(':id')

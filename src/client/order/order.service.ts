@@ -8,7 +8,21 @@ export class OrderService {
   constructor(private prisma: PrismaService) {}
 
   async create(createOrderDto: CreateOrderDto) {
-    const deliveryOrderAddress = createOrderDto?.deliveryAddress ?? undefined;
+    const deliveryOrderAddress = createOrderDto?.deliveryAddress;
+
+    const existingClient = await this.prisma.client.findFirst({
+      where: { phone: createOrderDto.client.phone },
+    });
+
+    const clientData = existingClient
+      ? { connect: { id: existingClient.id } }
+      : {
+          create: {
+            name: createOrderDto.client.name,
+            phone: createOrderDto.client.phone,
+            company: { connect: { id: createOrderDto.companyId } },
+          },
+        };
 
     const order = await this.prisma.order.create({
       data: {
@@ -19,24 +33,18 @@ export class OrderService {
         paymentVoucherBrand: createOrderDto.paymentVoucherBrand,
         company: { connect: { id: createOrderDto.companyId } },
         totalPrice: createOrderDto.totalPrice,
-        client: createOrderDto.client.id
-          ? { connect: { id: createOrderDto.client.id } }
-          : {
+        client: clientData,
+        deliveryAddress: deliveryOrderAddress
+          ? {
               create: {
-                name: createOrderDto.client.name,
-                phone: createOrderDto.client.phone,
-                company: { connect: { id: createOrderDto.companyId } },
+                cep: deliveryOrderAddress.cep,
+                street: deliveryOrderAddress.street,
+                number: deliveryOrderAddress.number,
+                complement: deliveryOrderAddress.complement,
+                reference: deliveryOrderAddress?.reference,
               },
-            },
-        deliveryAddress: deliveryOrderAddress && {
-          create: {
-            cep: deliveryOrderAddress.cep,
-            street: deliveryOrderAddress.street,
-            number: deliveryOrderAddress.number,
-            complement: deliveryOrderAddress.complement,
-            reference: deliveryOrderAddress?.reference,
-          },
-        },
+            }
+          : undefined,
         OrderItem: {
           create: createOrderDto.products.map((product) => ({
             product: { connect: { id: product.productId } },
@@ -52,13 +60,31 @@ export class OrderService {
       },
     });
 
-    return {
-      order,
-    };
+    return { order };
   }
 
-  findAll() {
-    return `This action returns all order`;
+  findAll(clientId: number, companyId: number) {
+    const orders = this.prisma.order.findMany({
+      where: {
+        clientId,
+        companyId,
+      },
+      include: {
+        client: true,
+        OrderItem: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return orders;
   }
 
   async findOne(id: number) {
