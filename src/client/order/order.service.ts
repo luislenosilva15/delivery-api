@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { SocketService } from 'src/common/socket/socket.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class OrderService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly socketService: SocketService,
+  ) {}
 
   async create(createOrderDto: CreateOrderDto) {
     const deliveryOrderAddress = createOrderDto?.deliveryAddress;
@@ -59,6 +63,12 @@ export class OrderService {
         OrderItem: { include: { product: true } },
       },
     });
+
+    try {
+      this.socketService.emitToCompany(order.companyId, 'new-order', order);
+    } catch {
+      // LOG
+    }
 
     return { order };
   }

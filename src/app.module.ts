@@ -13,6 +13,7 @@ import { CompanyModule as ClientCompanyModule } from './client/company/company.m
 import { MenuGroupModule as ClientMenuGroupModule } from './client/menu-group/menu-group.module';
 import { OrderModule as ClientOrderModule } from './client/order/order.module';
 import { OrderModule } from './order/order.module';
+import { SocketModule } from './common/socket/socket.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { OrderModule } from './order/order.module';
     ClientMenuGroupModule,
     ClientOrderModule,
     OrderModule,
+    SocketModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

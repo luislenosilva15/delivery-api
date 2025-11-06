@@ -7,10 +7,21 @@ export class OrderService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(status: OrderStatus, companyId: number) {
+    const isDelivery = status === OrderStatus.DELIVERED;
+
+    console.log({ status });
+
     const orders = await this.prisma.order.findMany({
+      orderBy: { createdAt: 'desc' },
       where: {
         status,
         companyId,
+        createdAt: isDelivery
+          ? {
+              gte: new Date(new Date().setHours(0, 0, 0, 0)),
+              lte: new Date(new Date().setHours(23, 59, 59, 999)),
+            }
+          : undefined,
       },
       include: {
         client: true,
