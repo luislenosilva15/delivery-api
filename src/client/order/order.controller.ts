@@ -7,10 +7,14 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { ClientOrJwtGuard } from 'src/common/guards/client-or-jwt.guard';
 
 @Controller('client/order')
 export class OrderController {
@@ -29,7 +33,16 @@ export class OrderController {
     return this.orderService.findAll(clientId, companyId);
   }
 
+  @Get('/lastOrder')
+  @UseGuards(ClientOrJwtGuard)
+  findLastOrder(@Req() req: Request & { user?: { id: string } }) {
+    const clientId = ClientOrJwtGuard.extractClientId(req);
+
+    return this.orderService.findLastOrder(clientId);
+  }
+
   @Get(':id')
+  @UseGuards(ClientOrJwtGuard)
   findOne(@Param('id') id: string) {
     return this.orderService.findOne(+id);
   }

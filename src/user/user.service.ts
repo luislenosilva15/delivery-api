@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -76,6 +80,28 @@ export class UserService {
 
     if (typeof updateUserDto.isActive === 'string') {
       user.isActive = updateUserDto.isActive === 'true';
+
+      if (!user.isActive) {
+        const adminCount = await this.prisma.user.count({
+          where: {
+            companyId: (
+              await this.prisma.user.findUnique({
+                where: { id },
+                select: { companyId: true },
+              })
+            )?.companyId,
+            role: 'ADMIN',
+            isActive: true,
+            id: { not: id },
+          },
+        });
+
+        if (!adminCount) {
+          throw new ConflictException(
+            'Necessário pelo menos um administrador ativo',
+          );
+        }
+      }
     }
 
     if (user.password) {
@@ -127,8 +153,37 @@ export class UserService {
     };
   }
 
-  remove(id: number) {
-    return this.prisma.user.delete({ where: { id } });
+  async remove(id: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (user) {
+      const adminCount = await this.prisma.user.count({
+        where: {
+          companyId: (
+            await this.prisma.user.findUnique({
+              where: { id },
+              select: { companyId: true },
+            })
+          )?.companyId,
+          role: 'ADMIN',
+          id: { not: id },
+        },
+      });
+
+      if (!adminCount) {
+        throw new ConflictException('Necessário pelo menos um administrador');
+      }
+    }
+
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+      },
+    });
   }
 
   async findAll(companyId: number, page = 1, search?: string, limit = 10) {
@@ -139,6 +194,7 @@ export class UserService {
         where: {
           companyId,
           name: { contains: search || '', mode: 'insensitive' },
+          isDeleted: false,
         },
         skip,
         take: limit,
@@ -147,6 +203,7 @@ export class UserService {
       this.prisma.user.count({
         where: {
           companyId,
+          isDeleted: false,
           name: { contains: search || '', mode: 'insensitive' },
         },
       }),

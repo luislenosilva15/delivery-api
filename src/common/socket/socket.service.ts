@@ -36,11 +36,37 @@ export class SocketService {
     this.server.to(`company-${companyId}`).emit(event, payloadCopy);
   }
 
+  emitToClient(clientId: number, event: string, payload: unknown) {
+    if (!this.server) {
+      this.logger.warn('Attempt to emit but socket server is not set');
+      return;
+    }
+
+    let payloadCopy: unknown;
+    try {
+      payloadCopy = JSON.parse(JSON.stringify(payload));
+    } catch {
+      this.logger.warn(
+        'Failed to deep-clone payload for emit; sending original',
+      );
+      payloadCopy = payload;
+    }
+
+    const ts = new Date().toISOString();
+    this.logger.log(`emit '${event}' -> client-${clientId} @ ${ts}`);
+    this.server.to(`client-${clientId}`).emit(event, payloadCopy);
+  }
+
   joinCompany(client: Socket, companyId: number) {
     // socket.io may return a Promise for join in some versions; use void to silence
     // promise-unhandled lint rule and intentionally ignore the return value.
     void client.join(`company-${companyId}`);
     this.logger.log(`Client ${client.id} joined company-${companyId}`);
+  }
+
+  joinClient(client: Socket, clientId: number) {
+    void client.join(`client-${clientId}`);
+    this.logger.log(`Client ${client.id} joined client-${clientId}`);
   }
 
   // Expose the raw server if needed (read-only)

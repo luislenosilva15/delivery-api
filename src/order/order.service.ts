@@ -1,15 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { OrderStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { SocketService } from 'src/common/socket/socket.service';
 
 @Injectable()
 export class OrderService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly socketService: SocketService,
+  ) {}
 
   async findAll(status: OrderStatus, companyId: number) {
     const isDelivery = status === OrderStatus.DELIVERED;
-
-    console.log({ status });
 
     const orders = await this.prisma.order.findMany({
       orderBy: { createdAt: 'desc' },
@@ -79,6 +81,12 @@ export class OrderService {
     const order = await this.prisma.order.update({
       where: { id: orderId },
       data: { status, outDeliveryDate: outDeliveryStatus ? new Date() : null },
+      include: { client: true },
+    });
+
+    // Emit to the specific client
+    this.socketService.emitToClient(order.clientId, 'order-status-changed', {
+      orderId: order.id,
     });
 
     return {

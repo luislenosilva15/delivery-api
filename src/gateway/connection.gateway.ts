@@ -40,6 +40,11 @@ export class ConnectionGateway
         `Cliente ${client.id} entrou na room company-${companyId}`,
       );
     });
+
+    client.on('join-client', (clientId: number) => {
+      this.socketService.joinClient(client, clientId);
+      this.logger.log(`Cliente ${client.id} entrou na room client-${clientId}`);
+    });
   }
 
   handleDisconnect(client: Socket) {

@@ -108,4 +108,8 @@ export class CreateOrderDto {
   totalPrice: number;
 
   deliveryAddress: DeliveryAddressDto;
+
+  @IsOptional()
+  @IsString()
+  documentInTicket?: string;
 }

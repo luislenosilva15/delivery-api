@@ -154,6 +154,8 @@ model User {
   isActive  Boolean  @default(false)
   companyId Int
   company   Company  @relation(fields: [companyId], references: [id])
+  isDeleted Boolean  @default(false)
+  deletedAt DateTime?
 }
 
 model MenuHours {
@@ -268,6 +270,7 @@ model Order {
   OrderItem             OrderItem[]
   totalPrice            Float
   outDeliveryDate       DateTime?
+  documentInTicket      String?
   paymentMethod         PaymentMethods
   paymentCardBrand      PaymentCardBrand?
   paymentDebitCardBrand PaymentDebitCardBrand?

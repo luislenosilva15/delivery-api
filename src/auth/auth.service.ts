@@ -31,6 +31,12 @@ export class AuthService {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
+    if (!user.isActive) {
+      throw new UnauthorizedException(
+        'Usuário inativo, contate o administrador',
+      );
+    }
+
     const payload = {
       id: user.id,
       email: user.email,

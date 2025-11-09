@@ -37,6 +37,7 @@ export class OrderService {
         paymentVoucherBrand: createOrderDto.paymentVoucherBrand,
         company: { connect: { id: createOrderDto.companyId } },
         totalPrice: createOrderDto.totalPrice,
+        documentInTicket: createOrderDto.documentInTicket || undefined,
         client: clientData,
         deliveryAddress: deliveryOrderAddress
           ? {
@@ -122,6 +123,30 @@ export class OrderService {
 
   update(id: number, updateOrderDto: UpdateOrderDto) {
     return `This action updates a #${id} order`;
+  }
+
+  async findLastOrder(clientId: number) {
+    const order = await this.prisma.order.findFirst({
+      where: { clientId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        client: true,
+        OrderItem: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return {
+      order,
+    };
   }
 
   remove(id: number) {
