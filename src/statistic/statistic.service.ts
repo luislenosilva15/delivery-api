@@ -80,7 +80,7 @@ export class StatisticService {
           _count: { select: { orders: true } },
           orders: {
             where: { companyId },
-            select: { createdAt: true },
+            select: { createdAt: true, totalPrice: true },
             orderBy: { createdAt: 'desc' },
           },
         },
