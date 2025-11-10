@@ -14,6 +14,7 @@ import { MenuGroupModule as ClientMenuGroupModule } from './client/menu-group/me
 import { OrderModule as ClientOrderModule } from './client/order/order.module';
 import { OrderModule } from './order/order.module';
 import { SocketModule } from './common/socket/socket.module';
+import { StatisticModule } from './statistic/statistic.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { SocketModule } from './common/socket/socket.module';
     ClientOrderModule,
     OrderModule,
     SocketModule,
+    StatisticModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
