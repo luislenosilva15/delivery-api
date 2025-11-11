@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -13,85 +12,90 @@ export class StatisticService {
       search,
       skip = 0,
       limit = 10,
-      sortBy = 'createdAt', // 👈 padrão
-      sortOrder = 'desc', // 👈 asc | desc
+      sortBy = 'createdAt',
     }: {
       search?: string;
       lastOrderDays?: number;
       skip?: number;
       limit?: number;
       sortBy?: 'name' | 'createdAt' | 'orders' | 'firstOrder' | 'lastOrder';
-      sortOrder?: 'asc' | 'desc';
     },
   ) {
-    let clientIdsFilter: number[] | undefined;
-
-    const baseWhere: any = {
-      companyId,
-      OR: [
-        { name: { contains: search || '', mode: 'insensitive' } },
-        { phone: { contains: search || '', mode: 'insensitive' } },
-      ],
+    const newOrder = {
+      orders: {
+        orders: {
+          _count: 'desc',
+        },
+      },
+      createdAt: { createdAt: 'asc' },
     };
-
-    if (clientIdsFilter && clientIdsFilter.length > 0) {
-      baseWhere.id = { in: clientIdsFilter };
-    }
-
-    // ⚙️ Define a ordenação dinamicamente
-    let orderBy: any = { createdAt: 'desc' };
-
-    if (sortBy === 'name') {
-      orderBy = { name: sortOrder };
-    } else if (sortBy === 'createdAt') {
-      orderBy = { createdAt: sortOrder };
-    } else if (sortBy === 'orders') {
-      orderBy = {
+    const clientsData = await this.prisma.client.findMany({
+      where: {
+        companyId,
+        ...(search && {
+          name: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        }),
+      },
+      skip,
+      take: limit,
+      orderBy: newOrder[sortBy],
+      include: {
         orders: {
-          _count: sortOrder,
-        },
-      };
-    } else if (sortBy === 'firstOrder') {
-      orderBy = {
-        orders: {
-          _min: {
-            createdAt: sortOrder,
+          select: {
+            createdAt: true,
+            totalPrice: true,
           },
         },
-      };
-    } else if (sortBy === 'lastOrder') {
-      orderBy = {
-        orders: {
-          _max: {
-            createdAt: sortOrder,
-          },
-        },
-      };
-    }
+      },
+    });
 
-    // 🔄 Busca clientes
-    const [data, total] = await this.prisma.$transaction([
-      this.prisma.client.findMany({
-        where: baseWhere,
-        skip,
-        take: limit,
-        orderBy,
-        include: {
-          _count: { select: { orders: true } },
-          orders: {
-            where: { companyId },
-            select: { createdAt: true, totalPrice: true },
-            orderBy: { createdAt: 'desc' },
+    const totalItems = await this.prisma.client.count({
+      where: {
+        companyId,
+        ...(search && {
+          name: {
+            contains: search,
+            mode: 'insensitive',
           },
-        },
-      }),
-      this.prisma.client.count({ where: baseWhere }),
-    ]);
+        }),
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
 
+    const clients = clientsData.map((client) => {
+      return {
+        id: client.id,
+        name: client.name,
+        createdAt: client.createdAt,
+        ordersCount: client.orders.length,
+        email: client.email,
+        phone: client.phone,
+        firstOrderDate: client.orders.length
+          ? client.orders.reduce((prev, curr) =>
+              prev.createdAt < curr.createdAt ? prev : curr,
+            ).createdAt
+          : null,
+        lastOrderDate: client.orders.length
+          ? client.orders.reduce((prev, curr) =>
+              prev.createdAt > curr.createdAt ? prev : curr,
+            ).createdAt
+          : null,
+        totalSpent: client.orders.reduce(
+          (sum, order) => sum + order.totalPrice,
+          0,
+        ),
+      };
+    });
     return {
-      clients: data,
-      totalItems: total,
-      totalPages: Math.ceil(total / limit),
+      clients,
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
+      currentPage: Math.floor(skip / limit) + 1,
     };
   }
 
