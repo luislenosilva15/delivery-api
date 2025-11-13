@@ -25,8 +25,27 @@ export class StatisticController {
     });
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.statisticService.findOne(+id);
+  @Get('/sales')
+  findOne(
+    @Req() req: JwtPayload,
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('includeRejected') includeRejected?: string,
+  ) {
+    return this.statisticService.findSales(+req.user.companyId, {
+      limit: Number(limit),
+      page: Number(page),
+      startDate,
+      endDate,
+      includeRejected: Boolean(includeRejected === 'true'),
+    });
+  }
+
+  @Get('/sales/:orderId')
+  findOrderDetails(@Param('orderId') orderId: string) {
+    console.log('Fetching details for orderId:', orderId);
+    return this.statisticService.findSale(+orderId);
   }
 }

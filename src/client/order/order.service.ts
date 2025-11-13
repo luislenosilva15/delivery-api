@@ -39,6 +39,7 @@ export class OrderService {
         totalPrice: createOrderDto.totalPrice,
         documentInTicket: createOrderDto.documentInTicket || undefined,
         client: clientData,
+        clientName: createOrderDto.client.name,
         deliveryAddress: deliveryOrderAddress
           ? {
               create: {

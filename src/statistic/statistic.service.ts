@@ -33,12 +33,23 @@ export class StatisticService {
       where: {
         companyId,
         ...(search && {
-          name: {
-            contains: search,
-            mode: 'insensitive',
-          },
+          OR: [
+            {
+              name: {
+                contains: search,
+                mode: 'insensitive',
+              },
+            },
+            {
+              phone: {
+                contains: search,
+                mode: 'insensitive',
+              },
+            },
+          ],
         }),
       },
+
       skip,
       take: limit,
       orderBy: newOrder[sortBy],
@@ -99,7 +110,102 @@ export class StatisticService {
     };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} statistic`;
+  async findSales(
+    companyId: number,
+    filters: {
+      page: number;
+      limit: number;
+      startDate?: string;
+      endDate?: string;
+      includeRejected: boolean;
+    },
+  ) {
+    const { page, limit, startDate, endDate, includeRejected } = filters;
+
+    const start = startDate ? new Date(startDate) : undefined;
+    const end = endDate ? new Date(endDate) : undefined;
+
+    const dateFilter =
+      start && end
+        ? {
+            gte: new Date(
+              Date.UTC(
+                start.getUTCFullYear(),
+                start.getUTCMonth(),
+                start.getUTCDate(),
+                0,
+                0,
+                0,
+                0,
+              ),
+            ),
+            lte: new Date(
+              Date.UTC(
+                end.getUTCFullYear(),
+                end.getUTCMonth(),
+                end.getUTCDate(),
+                23,
+                59,
+                59,
+                999,
+              ),
+            ),
+          }
+        : undefined;
+
+    const orders = await this.prisma.order.findMany({
+      where: {
+        companyId,
+        ...(includeRejected ? {} : { status: { not: 'CANCELLED' } }),
+        ...(dateFilter ? { createdAt: dateFilter } : {}),
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const totalOrders = await this.prisma.order.count({
+      where: {
+        companyId,
+        ...(includeRejected ? {} : { status: { not: 'CANCELLED' } }),
+        ...(dateFilter ? { createdAt: dateFilter } : {}),
+      },
+    });
+
+    const totalSelerResult = await this.prisma.order.aggregate({
+      where: {
+        companyId,
+        ...(dateFilter ? { createdAt: dateFilter } : {}),
+      },
+      _sum: {
+        totalPrice: true,
+      },
+    });
+
+    const totalSeler = totalSelerResult._sum.totalPrice || 0;
+
+    return {
+      sales: orders,
+      totalSales: totalOrders,
+      totalPages: Math.ceil(totalOrders / limit),
+      currentPage: page,
+      totalSeler,
+      averageTicket: totalOrders
+        ? Number(totalSeler / totalOrders).toFixed(2)
+        : 0,
+    };
+  }
+
+  async findSale(orderId: number) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        OrderItem: true,
+      },
+    });
+
+    return {
+      sale: order,
+    };
   }
 }
