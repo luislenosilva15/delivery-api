@@ -48,4 +48,9 @@ export class StatisticController {
     console.log('Fetching details for orderId:', orderId);
     return this.statisticService.findSale(+orderId);
   }
+
+  @Get('/dashboard')
+  findDashboard(@Req() req: JwtPayload) {
+    return this.statisticService.findDashboard(+req.user.companyId);
+  }
 }

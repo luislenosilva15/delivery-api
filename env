@@ -1,0 +1,5 @@
+DATABASE_URL="postgresql://neondb_owner:npg_VmMzbOny38wX@ep-rough-shadow-acwt9v9j-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+JWT_SECRET="deliverysystemappkey"
+SUPABASE_URL=https://qorqohjcceinufpyspag.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFvcnFvaGpjY2VpbnVmcHlzcGFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQzMzM5MjAsImV4cCI6MjA2OTkwOTkyMH0.QzDWGWgRyrbBrYY6-ralxAhgPgs5RCVXr31OXJZprNA
+SUPABASE_BUCKET=users

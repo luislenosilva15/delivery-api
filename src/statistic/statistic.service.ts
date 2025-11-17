@@ -208,4 +208,192 @@ export class StatisticService {
       sale: order,
     };
   }
+
+  async findDashboard(companyId: number) {
+    const totalRevenueMonth = await this.prisma.order.aggregate({
+      where: {
+        companyId,
+        createdAt: {
+          gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+        },
+        status: 'DELIVERED',
+      },
+      _sum: {
+        totalPrice: true,
+      },
+    });
+
+    const totalOrdersMonth = await this.prisma.order.count({
+      where: {
+        companyId,
+        createdAt: {
+          gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+        },
+        status: 'DELIVERED',
+      },
+    });
+
+    const totalNewClientsMonth = await this.prisma.client.count({
+      where: {
+        companyId,
+        createdAt: {
+          gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+        },
+      },
+    });
+
+    const totalRevenue7Days = await this.prisma.order.aggregate({
+      where: {
+        companyId,
+        createdAt: {
+          gte: new Date(
+            new Date().getFullYear(),
+            new Date().getMonth(),
+            new Date().getDate() - 7,
+          ),
+        },
+        status: 'DELIVERED',
+      },
+      _sum: {
+        totalPrice: true,
+      },
+    });
+
+    const totalOrders7Days = await this.prisma.order.count({
+      where: {
+        companyId,
+        createdAt: {
+          gte: new Date(
+            new Date().getFullYear(),
+            new Date().getMonth(),
+            new Date().getDate() - 7,
+          ),
+        },
+        status: 'DELIVERED',
+      },
+    });
+
+    const totalNewClients7Days = await this.prisma.client.count({
+      where: {
+        companyId,
+        createdAt: {
+          gte: new Date(
+            new Date().getFullYear(),
+            new Date().getMonth(),
+            new Date().getDate() - 7,
+          ),
+        },
+      },
+    });
+
+    const totalTicketMonth = totalOrdersMonth
+      ? Number(totalRevenueMonth._sum.totalPrice || 0) / totalOrdersMonth
+      : 0;
+
+    const totalTicket7Days = totalOrders7Days
+      ? Number(totalRevenue7Days._sum.totalPrice || 0) / totalOrders7Days
+      : 0;
+
+    const getDeliveryMethodPercentages = async () => {
+      const grouped = await this.prisma.order.groupBy({
+        by: ['deliveryMethod'],
+        where: {
+          companyId,
+          status: 'DELIVERED',
+        },
+        _count: {
+          deliveryMethod: true,
+        },
+      });
+
+      const totalOrders = grouped.reduce(
+        (acc, g) => acc + g._count.deliveryMethod,
+        0,
+      );
+
+      if (totalOrders === 0) {
+        return {
+          DELIVERY: 0,
+          LOCAL: 0,
+        };
+      }
+
+      const deliveryCount =
+        grouped.find((g) => g.deliveryMethod === 'DELIVERY')?._count
+          .deliveryMethod ?? 0;
+      const localCount =
+        grouped.find((g) => g.deliveryMethod === 'LOCAL')?._count
+          .deliveryMethod ?? 0;
+
+      return {
+        DELIVERY: Number(((deliveryCount / totalOrders) * 100).toFixed(2)),
+        LOCAL: Number(((localCount / totalOrders) * 100).toFixed(2)),
+      };
+    };
+
+    const deliveryMethodPercentages = await getDeliveryMethodPercentages();
+
+    const last3rders = await this.prisma.order.findMany({
+      where: {
+        companyId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 3,
+    });
+
+    // -------------------------------
+    // ORDERS POR DIA DO MÊS (inclui dias futuros = 0)
+    // -------------------------------
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const startOfMonth = new Date(year, month, 1);
+
+    const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
+
+    const ordersByDayRaw = await this.prisma.order.groupBy({
+      by: ['createdAt'],
+      where: {
+        companyId,
+        status: 'DELIVERED',
+        createdAt: {
+          gte: startOfMonth,
+          lte: new Date(year, month, lastDayOfMonth, 23, 59, 59),
+        },
+      },
+      _count: { id: true },
+    });
+
+    const orderCountMap = new Map<number, number>();
+
+    ordersByDayRaw.forEach((item) => {
+      const day = new Date(item.createdAt).getDate();
+      const count = item._count.id;
+      orderCountMap.set(day, (orderCountMap.get(day) || 0) + count);
+    });
+
+    const ordersPerDay = [];
+    for (let day = 1; day <= lastDayOfMonth; day++) {
+      ordersPerDay.push({
+        day,
+        total: orderCountMap.get(day) ?? 0,
+      });
+    }
+
+    return {
+      totalRevenueMonth: totalRevenueMonth._sum.totalPrice || 0,
+      totalOrdersMonth,
+      totalNewClientsMonth,
+      averageTicketMonth: Number(totalTicketMonth.toFixed(2)),
+      totalRevenue7Days: totalRevenue7Days._sum.totalPrice || 0,
+      totalOrders7Days,
+      totalNewClients7Days,
+      averageTicket7Days: Number(totalTicket7Days.toFixed(2)),
+      deliveryMethodPercentages,
+      // last3rders,
+      ordersPerDay,
+    };
+  }
 }

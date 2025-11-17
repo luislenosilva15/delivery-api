@@ -9,7 +9,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   app.enableCors({
-    origin: ['http://localhost:5173', 'https://admin.socket.io'], // URL do seu front
+    origin: ['http://localhost:5173', 'https://admin.socket.io', '*'],
     credentials: false,
   });
 
