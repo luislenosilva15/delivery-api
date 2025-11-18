@@ -87,6 +87,32 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum DeliveryFeeType {
+  FIXED
+  DISTANCE_BASED
+}
+
+model DeliveryFeeTier {
+  id            Int         @id @default(autoincrement())
+  deliveryFeeId Int
+  maxKm         Float
+  price         Float
+  isFree        Boolean     @default(false)
+  estimatedTime Int?
+  deliveryFee   DeliveryFee @relation(fields: [deliveryFeeId], references: [id])
+}
+
+model DeliveryFee {
+  id            Int               @id @default(autoincrement())
+  companyId     Int               @unique
+  type          DeliveryFeeType   @default(FIXED)
+  fixedFee      Float             @default(0)
+  isFree        Boolean           @default(true)
+  estimatedTime Int?
+  company       Company           @relation(fields: [companyId], references: [id])
+  tiers         DeliveryFeeTier[]
+}
+
 model Company {
   id                Int                  @id @default(autoincrement())
   email             String               @unique
@@ -115,6 +141,7 @@ model Company {
   Order             Order[]
   themePrimaryColor String? // Hex color code
   ClientCompany     ClientCompany[]
+  deliveryFee       DeliveryFee?
 }
 
 model CompanyPayment {

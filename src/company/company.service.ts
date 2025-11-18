@@ -4,6 +4,7 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
@@ -17,6 +18,7 @@ import {
   PaymentMethod,
   PaymentVoucherBrand,
 } from './entities/company.entity';
+import { FeesUpdateDto } from './dto/fees-update-dto';
 
 @Injectable()
 export class CompanyService {
@@ -132,6 +134,12 @@ export class CompanyService {
             cardBrand: paymentCardBrand,
             voucherBrand: paymentVoucherBrand,
             debitCardBrand: paymentDebitCardBrand,
+          },
+        },
+        deliveryFee: {
+          create: {
+            isFree: true,
+            type: 'FIXED',
           },
         },
       },
@@ -259,4 +267,41 @@ export class CompanyService {
   }
 
   remove(id: number) {}
+
+  async feesUpdate(companyId: number, fees: FeesUpdateDto) {
+    try {
+      return await this.prisma.company.update({
+        where: { id: companyId },
+        data: {
+          deliveryFee: {
+            update: {
+              isFree: fees.isFree,
+              type: fees.type,
+              fixedFee: fees.fixedFee,
+              estimatedTime: fees.estimatedTime,
+
+              tiers: fees.tiers
+                ? {
+                    deleteMany: {},
+                    create: fees.tiers.map((t) => ({
+                      maxKm: t.maxKm,
+                      price: t.price,
+                      isFree: t.isFree ?? false,
+                      estimatedTime: t.estimatedTime,
+                    })),
+                  }
+                : undefined,
+            },
+          },
+        },
+        include: {
+          deliveryFee: {
+            include: { tiers: true },
+          },
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Erro ao atualizar taxas');
+    }
+  }
 }

@@ -7,11 +7,17 @@ import {
   Delete,
   UseInterceptors,
   UploadedFile,
+  UseGuards,
+  Put,
+  Req,
 } from '@nestjs/common';
 import { CompanyService } from './company.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { JwtAuthGuard } from 'src/auth/jwt.guard';
+import { JwtPayload } from 'src/auth/types/jwt-payload.type';
+import { FeesUpdateDto } from './dto/fees-update-dto';
 
 @Controller('company')
 export class CompanyController {
@@ -39,5 +45,12 @@ export class CompanyController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.companyService.remove(+id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('/fees')
+  feesUpdate(@Body() feesUpdateDto: FeesUpdateDto, @Req() req: JwtPayload) {
+    console.error('feesUpdateDto', feesUpdateDto);
+    return this.companyService.feesUpdate(+req.user.companyId, feesUpdateDto);
   }
 }

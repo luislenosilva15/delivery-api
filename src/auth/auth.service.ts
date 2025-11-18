@@ -22,6 +22,9 @@ export class AuthService {
           include: {
             openingHours: true,
             companyPayment: true,
+            deliveryFee: {
+              include: { tiers: true },
+            },
           },
         },
       },
@@ -59,6 +62,9 @@ export class AuthService {
           include: {
             openingHours: true,
             companyPayment: true,
+            deliveryFee: {
+              include: { tiers: true },
+            },
           },
         },
       },
