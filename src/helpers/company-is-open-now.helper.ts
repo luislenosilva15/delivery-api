@@ -1,11 +1,13 @@
-import { Company } from 'src/company/entities/company.entity';
+import { Company, OpeningHour } from '@prisma/client';
 
-const isOpenNow = (company: Company) => {
+type CompanyWithHours = Company & { openingHours?: OpeningHour[] };
+
+const isOpenNow = (company: CompanyWithHours): boolean => {
   const now = new Date();
   const dayOfWeek = now.getDay(); // 0 = domingo, 6 = sábado
   const currentTime = now.toTimeString().slice(0, 5); // "HH:mm"
 
-  const todaysHours = company.openingHours.filter(
+  const todaysHours = (company.openingHours || []).filter(
     (h) => h.dayOfWeek === dayOfWeek && !h.closed && h.startTime && h.endTime,
   );
 

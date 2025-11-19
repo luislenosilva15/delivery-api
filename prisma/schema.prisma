@@ -113,6 +113,18 @@ model DeliveryFee {
   tiers         DeliveryFeeTier[]
 }
 
+model Address {
+  id          Int       @id @default(autoincrement())
+  street      String
+  number      String
+  city        String
+  state       String
+  complement  String?
+  zipCode     String
+  coordinates String
+  companies   Company[]
+}
+
 model Company {
   id                Int                  @id @default(autoincrement())
   email             String               @unique
@@ -125,10 +137,6 @@ model Company {
   phone             String?
   logoUrl           String
   isActive          Boolean              @default(true)
-  address           String?
-  city              String?
-  state             String?
-  zipCode           String?
   users             User[]
   openingHours      OpeningHour[]
   isAlwaysOpening   Boolean              @default(false)
@@ -142,6 +150,8 @@ model Company {
   themePrimaryColor String? // Hex color code
   ClientCompany     ClientCompany[]
   deliveryFee       DeliveryFee?
+  address           Address              @relation(fields: [addressId], references: [id])
+  addressId         Int
 }
 
 model CompanyPayment {

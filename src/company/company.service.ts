@@ -4,7 +4,7 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
@@ -19,12 +19,14 @@ import {
   PaymentVoucherBrand,
 } from './entities/company.entity';
 import { FeesUpdateDto } from './dto/fees-update-dto';
+import { OpenRouteServiceClient } from 'src/maps/openroute.service';
 
 @Injectable()
 export class CompanyService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storageService: StorageService,
+    private readonly ors: OpenRouteServiceClient,
   ) {}
 
   async create(createCompanyDto: CreateCompanyDto, image: Express.Multer.File) {
@@ -65,6 +67,48 @@ export class CompanyService {
     delete createCompanyDto.paymentDebitCardBrand;
     delete createCompanyDto.paymentVoucherBrand;
 
+    let addressData: {
+      street: string;
+      number: string;
+      complement?: string;
+      city: string;
+      state: string;
+      zipCode: string;
+    };
+    try {
+      console.log(createCompanyDto);
+      addressData = JSON.parse(createCompanyDto.address);
+    } catch (e) {
+      throw new BadRequestException(
+        'Endereço inválido: deve ser um JSON válido.',
+      );
+    }
+
+    const fullAddress = [
+      addressData.street,
+      addressData.number,
+      addressData.city,
+      addressData.state,
+      addressData.zipCode,
+    ]
+      .filter(Boolean)
+      .join(', ');
+
+    let coordinatesString: string | undefined;
+    if (fullAddress) {
+      try {
+        const coord = (await this.ors.geocode(fullAddress)) as {
+          lat: number;
+          lon: number;
+        } | null;
+        if (coord) {
+          coordinatesString = `${coord.lat},${coord.lon}`;
+        }
+      } catch (e) {
+        // Ignore geocode failure; continue without coordinates
+      }
+    }
+
     const imageUrlData = await this.storageService.upload(
       'company',
       image,
@@ -74,13 +118,25 @@ export class CompanyService {
     if (!imageUrlData?.path) {
       throw new InternalServerErrorException('Erro ao salvar imagem');
     }
+    const { address: addressJson, ...companyData } = createCompanyDto;
 
     const company = await this.prisma.company.create({
       data: {
-        ...createCompanyDto,
+        ...companyData,
         availability,
         logoUrl: imageUrlData.path,
         slugName: createCompanyDto.slugName,
+        address: {
+          create: {
+            street: addressData.street,
+            number: addressData.number,
+            complement: addressData.complement || null,
+            city: addressData.city,
+            state: addressData.state,
+            zipCode: addressData.zipCode,
+            coordinates: coordinatesString || '',
+          },
+        },
         openingHours: {
           create: [
             {
@@ -188,8 +244,10 @@ export class CompanyService {
     delete updateCompanyDto.paymentDebitCardBrand;
     delete updateCompanyDto.paymentVoucherBrand;
 
+    const { address: _, ...companyData } = updateCompanyDto;
+
     const company = {
-      ...updateCompanyDto,
+      ...companyData,
       availability,
     };
 
@@ -258,6 +316,7 @@ export class CompanyService {
       include: {
         companyPayment: true,
         openingHours: true,
+        address: true,
       },
     });
 

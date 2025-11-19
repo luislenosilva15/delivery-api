@@ -1,7 +1,16 @@
-import { Company } from 'src/company/entities/company.entity';
+import { Company, OpeningHour } from '@prisma/client';
 import isOpenNow from './company-is-open-now.helper';
 
-export const companyFormaterHelper = (company: Company) => {
+export type CompanyWithRelations = Company & { openingHours?: OpeningHour[] };
+export type FormattedCompany = CompanyWithRelations & {
+  isOpen: boolean;
+  logoUrl: string;
+  menuId?: number | null;
+};
+
+export const companyFormaterHelper = (
+  company: CompanyWithRelations,
+): FormattedCompany => {
   const isOpen = isOpenNow(company);
 
   const baseUrl =

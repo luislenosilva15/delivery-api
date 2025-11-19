@@ -27,21 +27,7 @@ export class CreateCompanyDto {
   @IsString()
   coverImageUrl?: string;
 
-  @IsOptional()
-  @IsString()
-  address?: string;
-
-  @IsOptional()
-  @IsString()
-  city?: string;
-
-  @IsOptional()
-  @IsString()
-  state?: string;
-
-  @IsOptional()
-  @IsString()
-  zipCode?: string;
+  address: string; // JSON string: {"street": "...", "number": "...", "complement": "...", "city": "...", "state": "...", "zipCode": "..."}
 
   @IsOptional()
   @IsString()
@@ -51,6 +37,8 @@ export class CreateCompanyDto {
   @IsString()
   paymentRequiredDocument?: string;
 
+  @IsOptional()
+  @IsString()
   availability: string;
 
   @IsOptional()
