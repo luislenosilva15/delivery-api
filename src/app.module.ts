@@ -15,6 +15,7 @@ import { OrderModule as ClientOrderModule } from './client/order/order.module';
 import { OrderModule } from './order/order.module';
 import { SocketModule } from './common/socket/socket.module';
 import { StatisticModule } from './statistic/statistic.module';
+import { ZApiModule } from './zapi/zapi.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { StatisticModule } from './statistic/statistic.module';
     OrderModule,
     SocketModule,
     StatisticModule,
+    ZApiModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
