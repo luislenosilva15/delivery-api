@@ -10,7 +10,7 @@ import { StorageService } from 'src/storage/storage.service';
   imports: [
     JwtModule.register({
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '99999999' },
+      signOptions: { expiresIn: '7d' },
     }),
   ],
   controllers: [AuthController],

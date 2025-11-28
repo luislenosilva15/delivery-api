@@ -16,6 +16,7 @@ import { OrderModule } from './order/order.module';
 import { SocketModule } from './common/socket/socket.module';
 import { StatisticModule } from './statistic/statistic.module';
 import { ZApiModule } from './zapi/zapi.module';
+import { OptionalsModule } from './optionals/optionals.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { ZApiModule } from './zapi/zapi.module';
     SocketModule,
     StatisticModule,
     ZApiModule,
+    OptionalsModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

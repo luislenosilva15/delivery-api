@@ -92,6 +92,53 @@ enum DeliveryFeeType {
   DISTANCE_BASED
 }
 
+enum OptionalType {
+  SIMPLE
+  OPTIONS
+}
+
+model Optional {
+  id            Int               @id @default(autoincrement())
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  name          String
+  type          OptionalType
+  code          String?
+  price         Float?
+  minSelections Int?
+  maxSelections Int?
+  canRepeat     Boolean           @default(false)
+  disabled      Boolean           @default(false)
+  menuId        Int
+  menu          Menu              @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  options       OptionalOption[]
+  products      ProductOptional[]
+
+  @@index([menuId])
+}
+
+model OptionalOption {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  name       String
+  price      Float
+  code       String?
+  optionalId Int
+  optional   Optional @relation(fields: [optionalId], references: [id], onDelete: Cascade)
+
+  @@index([optionalId])
+}
+
+model ProductOptional {
+  productId  Int
+  optionalId Int
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  optional   Optional @relation(fields: [optionalId], references: [id], onDelete: Cascade)
+
+  @@id([productId, optionalId])
+}
+
 model DeliveryFeeTier {
   id            Int         @id @default(autoincrement())
   deliveryFeeId Int
@@ -227,6 +274,7 @@ model Menu {
   menuGroup MenuGroup[]
   company   Company     @relation(fields: [companyId], references: [id])
   companyId Int
+  optionals Optional[]
 }
 
 model ProductHours {
@@ -240,23 +288,24 @@ model ProductHours {
 }
 
 model Product {
-  id              Int            @id @default(autoincrement())
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  code            String?
-  name            String
-  description     String?
-  price           Float
-  menuGroup       MenuGroup      @relation(fields: [menuGroupId], references: [id], onDelete: Cascade)
-  menuGroupId     Int
-  isAdultOnly     Boolean        @default(false)
-  productHours    ProductHours[]
-  image           String?
-  disabled        Boolean        @default(false)
-  alwaysAvailable Boolean        @default(true)
-  OrderItem       OrderItem[]
-  isDeleted       Boolean        @default(false)
-  deletedAt       DateTime?
+  id               Int               @id @default(autoincrement())
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  code             String?
+  name             String
+  description      String?
+  price            Float
+  menuGroup        MenuGroup         @relation(fields: [menuGroupId], references: [id], onDelete: Cascade)
+  menuGroupId      Int
+  isAdultOnly      Boolean           @default(false)
+  productHours     ProductHours[]
+  image            String?
+  disabled         Boolean           @default(false)
+  alwaysAvailable  Boolean           @default(true)
+  OrderItem        OrderItem[]
+  isDeleted        Boolean           @default(false)
+  deletedAt        DateTime?
+  productOptionals ProductOptional[]
 }
 
 model Client {

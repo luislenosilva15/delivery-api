@@ -32,13 +32,11 @@ export class ProductController {
     return this.productService.create(createProductDto, image);
   }
 
-  // Buscar todos os produtos por grupo
   @Get('group/:id')
   findAll(@Req() req: JwtPayload, @Param('id') id: string) {
     return this.productService.findAll(+id);
   }
 
-  // Buscar um produto
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.productService.findOne(+id);
