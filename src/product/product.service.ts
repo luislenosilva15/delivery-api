@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
 import { Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -99,21 +100,47 @@ export class ProductService {
       });
     }
 
-    const product = {
-      ...updateProductDto,
-      isAdultOnly: updateProductDto?.isAdultOnly
-        ? JSON.parse(updateProductDto.isAdultOnly)
-        : false,
-      price: JSON.parse(updateProductDto.price) as number,
-      alwaysAvailable: updateProductDto.alwaysAvailable
-        ? JSON.parse(updateProductDto.alwaysAvailable)
-        : false,
-      productHours: productHours
-        ? {
-            create: productHours,
-          }
-        : undefined,
-    };
+    const productOptions = JSON.stringify(
+      updateProductDto?.productOptions || '[]',
+    );
+
+    if (productOptions) {
+      await this.prisma.productOptional.deleteMany({
+        where: {
+          productId: id,
+        },
+      });
+    }
+
+    const product: any = { ...updateProductDto };
+
+    if (updateProductDto.price !== undefined) {
+      product.price = JSON.parse(updateProductDto.price) as number;
+    }
+    if (updateProductDto.isAdultOnly !== undefined) {
+      product.isAdultOnly = JSON.parse(updateProductDto.isAdultOnly);
+    }
+    if (updateProductDto.alwaysAvailable !== undefined) {
+      product.alwaysAvailable = JSON.parse(updateProductDto.alwaysAvailable);
+    }
+    if (updateProductDto.menuGroupId !== undefined) {
+      product.menuGroupId = Number(updateProductDto.menuGroupId);
+    }
+
+    product.productHours = productHours
+      ? {
+          create: productHours,
+        }
+      : undefined;
+    product.productOptionals = productOptions
+      ? {
+          create: updateProductDto.productOptions.map((optionalId) => ({
+            optionalId,
+          })),
+        }
+      : undefined;
+
+    delete product.productOptions;
 
     const hasRemoveImage = product.removeImage;
 
