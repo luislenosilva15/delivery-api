@@ -9,8 +9,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   app.enableCors({
-    origin: ['http://localhost:5173', 'https://admin.socket.io', '*'],
-    credentials: false,
+    origin: true,
   });
 
   app.useWebSocketAdapter(new IoAdapter(app));
